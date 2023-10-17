@@ -3,7 +3,6 @@ import com.typesafe.config.ConfigFactory
 import com.newmotion.akka.rabbitmq._
 
 
-
 def loadConfig(): Unit = {
   val config = ConfigFactory.load("manager.conf")
   val rabbitmqAddress = config.getString("rabbitmq.address")
@@ -25,8 +24,7 @@ def main(): Unit = {
   loadConfig()
 
   val factory = new ConnectionFactory()
-  // connect to address "template_rabbitmq"
-  factory.setHost("template_rabbitmq")
+  factory.setHost("gs_scala_rabbitmq")
   factory.setPort(5672)
   factory.setUsername("guest")
   factory.setPassword("guest")
@@ -35,10 +33,35 @@ def main(): Unit = {
 
   val channel: Channel = connection.createChannel()
 
-  // create a queue "work"
   channel.queueDeclare("work", false, false, false, null)
-  // send "{msg: "Hello world!"}" to queue "work"
   channel.basicPublish("", "work", null, "{msg: \"Hello world!\"}".getBytes())
 
-  Thread.sleep(30000)
+  val consumer: DefaultConsumer = new DefaultConsumer(channel) {
+    override def handleDelivery(
+      consumerTag: String,
+      envelope: Envelope,
+      properties: BasicProperties,
+      body: Array[Byte]
+    ): Unit = {
+      val message = new String(body, "UTF-8")
+
+
+      println("Received '" + message + "'")
+    }
+  }
+  channel.basicConsume("work", true, consumer)
+
+  println("Waiting for messages. To exit press CTRL+C")
+
+  try {
+    while (true) {
+      Thread.sleep(10000)
+    }
+  } catch {
+    case e: InterruptedException =>
+      println("Shutting down...")
+
+      channel.close()
+      connection.close()
+  }
 }
