@@ -17,10 +17,10 @@ setup: init compile build build_rabbitmq
 
 deploy:
 	mkdir -p graphite
-	docker stack deploy -c docker-compose.yaml template
+	docker stack deploy -c docker-compose.yaml gs_scala
 
 remove:
-	docker stack rm template
+	docker stack rm gs_scala
 
 manager_logs:
-	docker service logs -f template_manager
+	docker service logs -f gs_scala_manager
