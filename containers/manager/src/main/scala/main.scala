@@ -19,15 +19,17 @@ def loadConfig(): Unit = {
 
 @main
 def main(): Unit = {
-  println("Hello world!")
 
   loadConfig()
 
   val factory = new ConnectionFactory()
+
   factory.setHost("gs_scala_rabbitmq")
   factory.setPort(5672)
   factory.setUsername("guest")
   factory.setPassword("guest")
+
+  println("Connecting to RabbitMQ "+factory.getHost+":"+factory.getPort)
 
   val connection: Connection = factory.newConnection()
 
@@ -35,6 +37,8 @@ def main(): Unit = {
 
   channel.queueDeclare("work", false, false, false, null)
   channel.basicPublish("", "work", null, "{msg: \"Hello world!\"}".getBytes())
+
+  println(" [x] Sent 'Hello World!'")
 
   val consumer: DefaultConsumer = new DefaultConsumer(channel) {
     override def handleDelivery(
@@ -51,12 +55,10 @@ def main(): Unit = {
   }
   channel.basicConsume("work", true, consumer)
 
-  println("Waiting for messages. To exit press CTRL+C")
+  println("Waiting for messages. To exit press ENTER")
 
   try {
-    while (true) {
-      Thread.sleep(10000)
-    }
+    scala.io.StdIn.readLine()
   } catch {
     case e: InterruptedException =>
       println("Shutting down...")
