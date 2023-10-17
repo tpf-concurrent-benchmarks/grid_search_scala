@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.7"
 
 services:
   web:
@@ -11,7 +11,6 @@ services:
       - "./graphite.storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf"
       - "./graphite:/opt/graphite/storage/"
 
-
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.0
     command: -storage_driver="statsd" -storage_driver_host="graphite:8125" -storage_driver_db="cadvisor" -storage_driver_buffer_duration="1s"
@@ -22,3 +21,16 @@ services:
       - "/var/run:/var/run:rw"
       - "/sys:/sys:ro"
       - "/var/lib/docker/:/var/lib/docker:ro"
+
+  worker:
+    image: grid_search_scala_worker
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: none
+
+  manager:
+    image: grid_search_scala_manager
+    deploy:
+      restart_policy:
+        condition: none

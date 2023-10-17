@@ -4,6 +4,6 @@ WORKDIR /src
 
 COPY . /src
 
-RUN sbt compile
+# RUN sbt compile
 
 CMD ["sbt", "run"]
