@@ -35,6 +35,10 @@ services:
 
   worker:
     image: grid_search_scala_worker
+    depends_on:
+      - rabbitmq
+    volumes:
+      - "./containers/worker/:/src"
     deploy:
       replicas: 3
       restart_policy:
@@ -42,6 +46,10 @@ services:
 
   manager:
     image: grid_search_scala_manager
+    depends_on:
+      - rabbitmq
+    volumes:
+      - "./containers/manager/:/src"
     deploy:
       restart_policy:
         condition: none

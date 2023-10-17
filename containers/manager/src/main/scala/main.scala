@@ -20,25 +20,26 @@ def loadConfig(): Unit = {
 
 @main
 def main(): Unit = {
-  println("Hello world!")
 
   loadConfig()
 
   val factory = new ConnectionFactory()
-  // connect to address "template_rabbitmq"
-  factory.setHost("template_rabbitmq")
+
+  factory.setHost("gs_scala_rabbitmq")
   factory.setPort(5672)
   factory.setUsername("guest")
   factory.setPassword("guest")
+
+  println("Connecting to RabbitMQ "+factory.getHost+":"+factory.getPort)
 
   val connection: Connection = factory.newConnection()
 
   val channel: Channel = connection.createChannel()
 
-  // create a queue "work"
   channel.queueDeclare("work", false, false, false, null)
-  // send "{msg: "Hello world!"}" to queue "work"
   channel.basicPublish("", "work", null, "{msg: \"Hello world!\"}".getBytes())
+
+  println(" [x] Sent 'Hello World!'")
 
   Thread.sleep(30000)
 }
