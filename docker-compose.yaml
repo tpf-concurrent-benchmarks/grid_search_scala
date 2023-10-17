@@ -22,6 +22,17 @@ services:
       - "/sys:/sys:ro"
       - "/var/lib/docker/:/var/lib/docker:ro"
 
+  rabbitmq:
+    image: rostov_rabbitmq
+    ports:
+      - 15672:15672
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 50s
+
   worker:
     image: grid_search_scala_worker
     deploy:

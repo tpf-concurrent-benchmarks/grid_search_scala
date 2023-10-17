@@ -10,7 +10,10 @@ build:
 	docker build -t grid_search_scala_worker ./containers/worker/
 	docker build -t grid_search_scala_manager ./containers/manager/
 
-setup: init compile build
+build_rabbitmq:
+	docker build -t rostov_rabbitmq ./containers/rabbitmq/
+
+setup: init compile build build_rabbitmq
 
 deploy:
 	mkdir -p graphite
@@ -18,3 +21,6 @@ deploy:
 
 remove:
 	docker stack rm template
+
+manager_logs:
+	docker service logs -f template_manager
