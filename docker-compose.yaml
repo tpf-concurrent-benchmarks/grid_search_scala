@@ -1,0 +1,24 @@
+version: '3.7'
+
+services:
+  web:
+    image: nginx:latest
+
+  graphite:
+    image: graphiteapp/graphite-statsd:1.1.10-4
+    volumes:
+      - "./statsd.config.js:/opt/statsd/config.js"
+      - "./graphite.storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf"
+      - "./graphite:/opt/graphite/storage/"
+
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    command: -storage_driver="statsd" -storage_driver_host="graphite:8125" -storage_driver_db="cadvisor" -storage_driver_buffer_duration="1s"
+    depends_on:
+      - graphite
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:rw"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
