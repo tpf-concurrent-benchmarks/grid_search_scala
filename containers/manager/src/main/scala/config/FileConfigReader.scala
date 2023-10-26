@@ -21,11 +21,11 @@ case class FileConfigReader(filePath: String = "manager.conf") extends ConfigRea
 
     override def getQueuesConfig: QueuesConfig = {
         val workQueue = config.getString("middleware.queues.work")
-        val resultQueue = config.getString("middleware.queues.result")
+        val resultsQueue = config.getString("middleware.queues.results")
 
         QueuesConfig(
             workQueue,
-            resultQueue)
+            resultsQueue)
     }
 
     override def getMetricsConfig: MetricsConfig = {
