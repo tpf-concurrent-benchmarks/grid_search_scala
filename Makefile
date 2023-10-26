@@ -15,6 +15,13 @@ build:
 build_rabbitmq:
 	docker build -t rostov_rabbitmq ./containers/rabbitmq/
 
+run_rabbitmq:
+	docker run -d --hostname my-rabbit --name rostov_rabbitmq -p 15672:15672 -p 5672:5672 rostov_rabbitmq
+
+down_rabbitmq:
+	docker stop rostov_rabbitmq
+	docker rm rostov_rabbitmq
+
 setup: init compile build build_rabbitmq
 
 deploy:
