@@ -43,6 +43,9 @@ services:
       replicas: 3
       restart_policy:
         condition: none
+    environment:
+      - LOCAL=${LOCAL}
+
 
   manager:
     image: grid_search_scala_manager
@@ -53,3 +56,5 @@ services:
     deploy:
       restart_policy:
         condition: none
+    environment:
+      - LOCAL=${LOCAL}

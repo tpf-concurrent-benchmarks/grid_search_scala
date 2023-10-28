@@ -33,3 +33,7 @@ remove:
 
 manager_logs:
 	docker service logs -f gs_scala_manager
+
+run_manager_local:
+	cd ./containers/manager && LOCAL=true sbt run
+	cd ../..

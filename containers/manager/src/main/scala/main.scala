@@ -7,23 +7,17 @@ import config.{FileConfigReader, QueuesConfig}
 
 case class Message(data: List[List[Int]]) derives upickle.default.ReadWriter
 
-def loadConfig(): Unit = {
-    val config = ConfigFactory.load("manager.conf")
-    val rabbitmqAddress = config.getString("rabbitmq.address")
-    val rabbitmqPort = config.getInt("rabbitmq.port")
-    val rabbitmqUser = config.getString("rabbitmq.user")
-    val rabbitmqPassword = config.getString("rabbitmq.password")
-
-    println("rabbitmq.address: " + rabbitmqAddress)
-    println("rabbitmq.port: " + rabbitmqPort)
-    println("rabbitmq.user: " + rabbitmqUser)
-    println("rabbitmq.password: " + rabbitmqPassword)
-
+def getConfigReader(): FileConfigReader = {
+    if (System.getenv("LOCAL") == "true") {
+        FileConfigReader("manager_local.conf")
+    } else {
+        FileConfigReader()
+    }
 }
 
 @main
 def main(): Unit = {
-    val config = FileConfigReader()
+    val config = getConfigReader()
     val rabbitMq = middleware.Rabbit(config.getMiddlewareConfig)
     val queues = config.getQueuesConfig
 
