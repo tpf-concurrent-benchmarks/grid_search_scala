@@ -13,7 +13,6 @@ case class IntervalIterator(start: Double, end: Double, step: Double, precision:
     def hasNext: Boolean = current < end
     def next: Double = {
         val result = current
-        println(s"Returning $result from $start to $end with step $step")
         current = roundNumber(current + step, precision)
         result
     }
