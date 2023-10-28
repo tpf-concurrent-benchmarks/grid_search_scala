@@ -48,7 +48,7 @@ class Rabbit(config: MiddlewareConfig) extends MessageQueue {
                 }
             }
         }
-        channel.basicConsume(queue, true, consumer)
+        channel.basicConsume(queue, false, consumer)
     }
 
     override def publish(eventName: String, message: String): Unit = {
