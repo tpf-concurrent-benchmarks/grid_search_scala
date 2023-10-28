@@ -21,6 +21,9 @@ deploy:
 	mkdir -p graphite
 	docker stack deploy -c docker-compose.yaml gs_scala
 
+deploy_rabbit_standalone:
+	docker stack deploy -c docker-compose-rabbitmq.yaml rabbit
+
 remove:
 	docker stack rm gs_scala
 
