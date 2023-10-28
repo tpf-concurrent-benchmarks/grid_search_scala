@@ -37,3 +37,7 @@ manager_logs:
 run_manager_local:
 	cd ./containers/manager && LOCAL=true sbt run
 	cd ../..
+
+run_manager_tests:
+	cd ./containers/manager && sbt test
+	cd ../..
