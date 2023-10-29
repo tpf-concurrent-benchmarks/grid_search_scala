@@ -89,7 +89,7 @@ class IntervalTest extends AnyFunSuite {
 
     test("Interval.split not evenly of interval of multiple ints works") {
         val interval = Interval(0, 33, 1)
-        val split = interval.split(7)
+        val split = interval.split(7).toList
         val expected = List(
             Interval(0, 5, 1),
             Interval(5, 10, 1),
@@ -104,7 +104,7 @@ class IntervalTest extends AnyFunSuite {
 
     test("Interval.split not evenly of interval of two doubles works") {
         val interval = Interval(0.1, 0.3, 0.1)
-        val split = interval.split(2, Some(2))
+        val split = interval.split(2, Some(2)).toList
         val expected = List(
             Interval(0.1, 0.2, 0.1, 2),
             Interval(0.2, 0.3, 0.1, 2))
@@ -114,7 +114,7 @@ class IntervalTest extends AnyFunSuite {
 
     test("Interval.split not evenly of interval of multiple doubles works") {
         val interval = Interval(0.1, 0.16, 0.01)
-        val split = interval.split(3, Some(3))
+        val split = interval.split(3, Some(3)).toList
         val expected = List(
             Interval(0.1, 0.12, 0.01, 3),
             Interval(0.12, 0.14, 0.01, 3),
@@ -124,7 +124,7 @@ class IntervalTest extends AnyFunSuite {
 
     test("Interval.integration test works") {
         val interval = Interval(-13.4, 49.53, 0.3)
-        val split = interval.split(7, Some(3))
+        val split = interval.split(7, Some(3)).toList
         val unfoldedInterval = interval.unfold(Some(3)).toList
         val unfoldedSplit = split.flatMap(_.unfold(Some(3)).toList)
         assert(unfoldedInterval == unfoldedSplit)

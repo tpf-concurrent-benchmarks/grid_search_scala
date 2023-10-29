@@ -16,19 +16,20 @@ object Interval {
 case class Interval(start: Double, end: Double, step: Double, precision: Option[Int] = None) {
     val size: Int = Math.ceil(roundNumber((end - start) / step, precision)).toInt
 
-    def unfold(precision: Option[Int] = None): IntervalIterator = {
-        IntervalIterator(start, end, step, precision)
+    def unfold(precision: Option[Int] = None): Iterator[Double] = {
+        IntervalIterator(start, end, step, precision).iterator
     }
 
-    def splitEvenly(amountOfSubIntervals: Int, precision: Option[Int] = None): IndexedSeq[Interval] = {
-        Range.inclusive(0, amountOfSubIntervals - 1).map(pos => {
+    def splitEvenly(amountOfSubIntervals: Int, precision: Option[Int] = None): Iterator[Interval] = {
+        val ret = Range.inclusive(0, amountOfSubIntervals - 1).map(pos => {
             val subStart = roundNumber(start + pos * Math.floor(size / amountOfSubIntervals) * step, precision)
             val subEnd = roundNumber(start + (pos + 1) * Math.floor(size / amountOfSubIntervals) * step, precision)
             Interval(subStart, subEnd, step, precision)
         })
+        ret.iterator
     }
 
-    def split(amountOfSubIntervals: Int, precision: Option[Int] = None): IndexedSeq[Interval] = {
+    def split(amountOfSubIntervals: Int, precision: Option[Int] = None): Iterator[Interval] = {
         if (size % amountOfSubIntervals == 0) {
             return splitEvenly(amountOfSubIntervals, precision)
         } else if (size < amountOfSubIntervals) {
@@ -39,7 +40,7 @@ case class Interval(start: Double, end: Double, step: Double, precision: Option[
         val amountOfSubIntervalsOfFullSize = Math.floor((size - amountOfSubIntervals) / (maxElemsPerInterval - 1).toDouble).toInt
 
         var subEnd = 0.0
-        Range.inclusive(0, amountOfSubIntervalsOfFullSize - 1).map(pos => {
+        val ret = Range.inclusive(0, amountOfSubIntervalsOfFullSize - 1).map(pos => {
             val subStart = roundNumber(start + pos * maxElemsPerInterval * step, precision)
             subEnd = roundNumber(Math.min(end, subStart + maxElemsPerInterval * step), precision)
             Interval(subStart, subEnd, step, precision)
@@ -48,5 +49,6 @@ case class Interval(start: Double, end: Double, step: Double, precision: Option[
             val remainingAmountOfSubIntervals = amountOfSubIntervals - amountOfSubIntervalsOfFullSize
             remainingInterval.split(remainingAmountOfSubIntervals, precision)
         }
+        ret.iterator
     }
 }

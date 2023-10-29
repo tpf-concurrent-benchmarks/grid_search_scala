@@ -1,9 +1,9 @@
 package org.grid_search.manager
-import com.typesafe.config.ConfigFactory
-import com.newmotion.akka.rabbitmq
 import config.{FileConfigReader, QueuesConfig}
+import work_split.{CircularIterator, Interval, Work}
 
-import org.grid_search.manager.work_split.{Interval, Work}
+import com.newmotion.akka.rabbitmq
+import com.typesafe.config.ConfigFactory
 
 
 

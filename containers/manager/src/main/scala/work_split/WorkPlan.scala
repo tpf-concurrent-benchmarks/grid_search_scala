@@ -5,36 +5,38 @@ import scala.collection.IndexedSeqView
 import scala.util.control.Breaks._
 
 object WorkPlan {
-    def apply(intervals: List[CircularIterator], intervalsPerIterator: List[Int]): WorkPlan = {
-        new WorkPlan(intervals, intervalsPerIterator)
+    def apply(intervals: List[CircularIterator[Interval]]): WorkPlan = {
+        new WorkPlan(intervals)
     }
 }
 
-case class WorkPlan(intervals: List[CircularIterator], intervalsPerIterator: List[Int]) {
-    def calcCartesianProduct(): IndexedSeqView[Work] = {
-        var positions = List.fill(intervals.length)(0)
-        val size = intervals.map(_.size()).product
-        var currentValues = intervals.map(_.next)
-        var update = false
+case class WorkPlan(intervals: List[CircularIterator[Interval]]) extends Iterator[Work] {
+    private val intervalsPerIterator = intervals.map(_.size())
+    private val size = intervalsPerIterator.product
+    private var currentValues = intervals.map(_.next)
+    private var positions = List.fill(intervals.length)(0)
+    private var generatedAmount = 0
 
-        for (_ <- (0 until size).view) yield {
-            if (update) {
-                breakable {
-                    for (i <- intervals.indices.view) {
-                        positions = positions.updated(i, positions(i) + 1)
-                        currentValues = currentValues.updated(i, intervals(i).next)
+    override def next(): Work = {
+        val result = Work(currentValues)
+        update()
+        result
+    }
 
-                        if (positions(i) < intervalsPerIterator(i)) {
-                            break
-                        } else {
-                            positions = positions.updated(i, 0)
-                        }
-                    }
-                }
+    override def hasNext: Boolean = generatedAmount < size
+
+    def update(): Unit = {
+        generatedAmount += 1
+        intervals.indices.takeWhile(i => {
+            positions = positions.updated(i, positions(i) + 1)
+            currentValues = currentValues.updated(i, intervals(i).next)
+
+            if (positions(i) < intervalsPerIterator(i)) {
+                false
             } else {
-                update = true
+                positions = positions.updated(i, 0)
+                true
             }
-            Work(currentValues)
-        }
+        })
     }
 }

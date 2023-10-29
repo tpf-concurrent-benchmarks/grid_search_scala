@@ -40,7 +40,7 @@ case class Work(intervals: List[Interval]) {
         currPartitionsPerInterval
     }
 
-    def split(maxChunkSize: Int, precision: Option[Int] = None): IndexedSeqView[Work] = {
+    def split(maxChunkSize: Int, precision: Option[Int] = None): Iterator[Work] = {
         val minBatches = Math.floor(size / maxChunkSize) + 1
         val partitionsPerInterval = calcPartitionsPerInterval(minBatches.toInt)
 
@@ -50,6 +50,6 @@ case class Work(intervals: List[Interval]) {
             CircularIterator(iterator, partitionsPerInterval(intervalPos), precision)
         }
 
-        WorkPlan(listOfIterator.toList, partitionsPerInterval).calcCartesianProduct()
+        WorkPlan(listOfIterator.toList).iterator
     }
 }

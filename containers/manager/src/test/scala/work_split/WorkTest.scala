@@ -21,6 +21,7 @@ class WorkTest extends AnyFunSuite {
         assert(l == List(List(0, 0), List(0, 1), List(1, 0), List(1, 1)))
     }
 
+
     test("Work.unfold is lazy") {
         val w = Work(List.fill(15)(Interval(0, 2, 1)))
         val l = w.unfold().take(2).toList
@@ -28,6 +29,7 @@ class WorkTest extends AnyFunSuite {
         assert(l(1) == List.fill(14)(0) ::: List(1))
         assert(w.size == Math.pow(2, 15))
     }
+
 
     test("Work.split works") {
         val w = Work(List(Interval(0, 2, 1), Interval(5, 7, 1)))
@@ -48,6 +50,4 @@ class WorkTest extends AnyFunSuite {
         assert(unfoldedSubWorks.size == unfoldedWork.size)
         assert(unfoldedSubWorks.sorted == unfoldedWork.sorted)
     }
-
-
 }
