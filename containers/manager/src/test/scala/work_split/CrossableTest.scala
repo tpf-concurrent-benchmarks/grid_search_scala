@@ -6,7 +6,6 @@ import org.scalatest.funsuite.AnyFunSuite
 import scala.collection.immutable.List
 
 class CrossableTest extends AnyFunSuite {
-    /*
     test("Crossable.cross of empty lists returns empty list") {
         val result = List() cross List()
         assert(result.toList == List())
@@ -41,5 +40,4 @@ class CrossableTest extends AnyFunSuite {
         val result = LazyList.continually(1) cross List(1, 2, 3)
             assert(result.take(3).toList == List((1, 1), (1, 2), (1, 3)))
     }
-    */
 }
