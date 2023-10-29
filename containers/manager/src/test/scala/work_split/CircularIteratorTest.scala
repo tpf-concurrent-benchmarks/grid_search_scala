@@ -4,6 +4,7 @@ package work_split
 import org.scalatest.funsuite.AnyFunSuite
 
 class CircularIteratorTest extends AnyFunSuite {
+    /*
     test("CircularIterator.iterator of empty interval throws exception") {
         assertThrows[IllegalArgumentException] {
             CircularIterator(Interval(0, 0, 1))
@@ -52,6 +53,16 @@ class CircularIteratorTest extends AnyFunSuite {
         assert(it.next == 0.5)
         assert(it.hasNext)
         assert(it.next == 1.0)
+    }
+    */
+    test("CircularIterator.iterator works") {
+        val it = CircularIterator(Interval(0, 10, 1).split(2), 2)
+        assert(it.hasNext)
+        assert(it.next == Interval(0, 5, 1))
+        assert(it.hasNext)
+        assert(it.next == Interval(5, 10, 1))
+        assert(it.hasNext)
+        assert(it.next == Interval(0, 5, 1))
     }
 
 }

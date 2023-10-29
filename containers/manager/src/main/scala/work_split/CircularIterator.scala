@@ -2,21 +2,21 @@ package org.grid_search.manager
 package work_split
 
 object CircularIterator {
-    def apply(interval: Interval, precision: Option[Int] = None): CircularIterator = {
-        if (interval.size <= 0) {
+    def apply(intervals: IndexedSeq[Interval], len: Int, precision: Option[Int] = None): CircularIterator = {
+        if (intervals.size <= 0) {
             throw new IllegalArgumentException("Size must be positive")
         }
-        new CircularIterator(interval, precision)
+        new CircularIterator(intervals, len, precision)
     }
 }
 
-case class CircularIterator(interval: Interval, precision: Option[Int] = None) extends Iterator[Double] {
+case class CircularIterator(intervals: IndexedSeq[Interval], len: Int, precision: Option[Int] = None) extends Iterator[Interval] {
     private var position = 0
-    private val it = interval.unfold(precision)
-    private var calculatedValues = List[Double]()
 
-    override def toList: List[Double] = {
-        val res = List[Double]()
+    override def size(): Int = len
+
+    override def toList: List[Interval] = {
+        val res = List[Interval]()
         while (hasNext) {
             res.appended(next)
         }
@@ -24,14 +24,11 @@ case class CircularIterator(interval: Interval, precision: Option[Int] = None) e
     }
 
     def hasNext = true
-    def next: Double = {
-        if (position == interval.size) {
+    def next: Interval = {
+        if (position == len) {
             position = 0
         }
-        if (position == calculatedValues.size) {
-            calculatedValues = calculatedValues.appended(it.next)
-        }
-        val value = calculatedValues(position)
+        val value = intervals(position)
         position += 1
         value
     }

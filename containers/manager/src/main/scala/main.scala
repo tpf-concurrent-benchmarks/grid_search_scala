@@ -3,6 +3,8 @@ import com.typesafe.config.ConfigFactory
 import com.newmotion.akka.rabbitmq
 import config.{FileConfigReader, QueuesConfig}
 
+import org.grid_search.manager.work_split.{Interval, Work}
+
 
 
 case class Message(data: List[List[Int]]) derives upickle.default.ReadWriter

@@ -9,10 +9,11 @@ object Interval {
 }
 
 case class Interval(start: Double, end: Double, step: Double) {
+
     val size: Int = Math.ceil((end - start) / step).toInt
 
     def unfold(precision: Option[Int] = None): IntervalIterator = {
-        new IntervalIterator(start, end, step, precision)
+        IntervalIterator(start, end, step, precision)
     }
 
     def splitEvenly(amountOfSubIntervals: Int, precision: Option[Int] = None): IndexedSeq[Interval] = {
