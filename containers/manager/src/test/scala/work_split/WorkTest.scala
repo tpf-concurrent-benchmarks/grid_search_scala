@@ -50,4 +50,10 @@ class WorkTest extends AnyFunSuite {
         assert(unfoldedSubWorks.size == unfoldedWork.size)
         assert(unfoldedSubWorks.sorted == unfoldedWork.sorted)
     }
+
+    test("Work.split is lazy") {
+        val w = Work(List.fill(100)(Interval(0, 15, 1)))
+        val subWorks = w.split(50).take(3).toList
+        assert(subWorks.size == 3)
+    }
 }

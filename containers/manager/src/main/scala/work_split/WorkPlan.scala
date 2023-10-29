@@ -11,8 +11,12 @@ object WorkPlan {
 }
 
 case class WorkPlan(intervals: List[CircularIterator[Interval]]) extends Iterator[Work] {
-    private val intervalsPerIterator = intervals.map(_.size())
-    private val size = intervalsPerIterator.product
+    private val intervalsPerIterator = intervals.map(interval => BigInt(interval.size()))
+    private val size: BigInt = {
+        intervalsPerIterator.foldLeft(BigInt(1))((a, b) => {
+            a * b
+        })
+    }
     private var currentValues = intervals.map(_.next)
     private var positions = List.fill(intervals.length)(0)
     private var generatedAmount = 0

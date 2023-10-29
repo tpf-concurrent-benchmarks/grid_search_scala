@@ -8,11 +8,11 @@ object Work {
 }
 
 case class Work(intervals: List[Interval]) {
-    val size: Int = calcSize()
+    val size: BigInt = calcSize()
     var current: List[Double] = intervals.map(i => i.start)
 
-    private def calcSize(): Int = {
-        intervals.map(_.size).product
+    private def calcSize(): BigInt = {
+        intervals.map(i => BigInt(i.size)).product
     }
 
     def unfold(precision: Option[Int] = None): WorkIterator = {
@@ -41,7 +41,7 @@ case class Work(intervals: List[Interval]) {
     }
 
     def split(maxChunkSize: Int, precision: Option[Int] = None): Iterator[Work] = {
-        val minBatches = Math.floor(size / maxChunkSize) + 1
+        val minBatches = Math.floor(size.toDouble / maxChunkSize) + 1
         val partitionsPerInterval = calcPartitionsPerInterval(minBatches.toInt)
 
 
