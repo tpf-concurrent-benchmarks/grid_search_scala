@@ -40,17 +40,14 @@ class WorkTest extends AnyFunSuite {
     }
 
     test("Work.split works with big intervals") {
-        val w = Work(List(Interval(-5.3, 5.8, 0.1), Interval(0, 1, 1)))
+        val w = Work(List(Interval(-5.3, 5.8, 0.4, 3)))
         val unfoldedWork = w.unfold(Some(3)).toList
         val subWorks = w.split(5, Some(3)).toList
-        val unfoldedSubWorks = subWorks.flatMap(_.unfold(Some(3))).toList
+        val unfoldedSubWorks = subWorks.flatMap(_.unfold(Some(3)))
 
-        println(s"unfoldedWork.size = ${unfoldedWork.size}")
-        println(s"unfoldedSubWorks.size = ${unfoldedSubWorks.size}")
-
-        assert(unfoldedWork.size == unfoldedSubWorks.size)
-        assert(unfoldedWork.sorted == unfoldedSubWorks.sorted)
-
+        assert(unfoldedSubWorks.size == unfoldedWork.size)
+        assert(unfoldedSubWorks.sorted == unfoldedWork.sorted)
     }
+
 
 }

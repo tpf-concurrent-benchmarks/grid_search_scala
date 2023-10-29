@@ -15,27 +15,8 @@ case class Work(intervals: List[Interval]) {
         intervals.map(_.size).product
     }
 
-    def next(precision: Option[Int] = None): List[Double] = {
-        val result = current
-        for (i <- current.indices.reverse) {
-            val start = intervals(i).start
-            val end = intervals(i).end
-            val step = intervals(i).step
-
-            if (current(i) + step < end) {
-                current = current.updated(i, roundNumber(current(i) + step, precision))
-                return result
-            } else {
-                current = current.updated(i, start)
-            }
-        }
-        result
-    }
-
-    def unfold(precision: Option[Int] = None): IndexedSeqView[List[Double]] = {
-        for (_ <- (0 until size).view) yield {
-            next(precision)
-        }
+    def unfold(precision: Option[Int] = None): WorkIterator = {
+        WorkIterator(this, precision)
     }
 
     private def calcAmountOfMissingPartitions(minBatches: Int, partitionsPerInterval: List[Int]): Int = {
@@ -62,6 +43,7 @@ case class Work(intervals: List[Interval]) {
     def split(maxChunkSize: Int, precision: Option[Int] = None): IndexedSeqView[Work] = {
         val minBatches = Math.floor(size / maxChunkSize) + 1
         val partitionsPerInterval = calcPartitionsPerInterval(minBatches.toInt)
+
 
         val listOfIterator = for (intervalPos <- intervals.indices) yield {
             val iterator = intervals(intervalPos).split(partitionsPerInterval(intervalPos), precision)

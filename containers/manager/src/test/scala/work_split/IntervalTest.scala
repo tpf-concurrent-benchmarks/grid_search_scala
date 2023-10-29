@@ -33,12 +33,12 @@ class IntervalTest extends AnyFunSuite {
     }
 
     test("Interval.split evenly of interval of two ints works") {
-        assert(Interval(0, 2, 1).split(2) == List(Interval(0, 1, 1), Interval(1, 2, 1)))
+        assert(Interval(0, 2, 1).split(2).toList == List(Interval(0, 1, 1), Interval(1, 2, 1)))
     }
 
     test("Interval.split evenly of interval of multiple ints works") {
         val interval = Interval(0, 10, 1)
-        val split = interval.split(5)
+        val split = interval.split(5).toList
         val expected = List(
             Interval(0, 2, 1),
             Interval(2, 4, 1),
@@ -50,37 +50,37 @@ class IntervalTest extends AnyFunSuite {
 
     test("Interval.split evenly of interval of two doubles works") {
         val interval = Interval(0.1, 0.3, 0.1)
-        val split = interval.split(2, Some(2))
+        val split = interval.split(2, Some(2)).toList
         val expected = List(
-            Interval(0.1, 0.2, 0.1),
-            Interval(0.2, 0.3, 0.1))
+            Interval(0.1, 0.2, 0.1, 2),
+            Interval(0.2, 0.3, 0.1, 2))
 
         assert(split == expected)
     }
 
     test("Interval.split evenly of interval of multiple doubles works") {
         val interval = Interval(0.1, 0.5, 0.1)
-        val split = interval.split(2, Some(2))
+        val split = interval.split(2, Some(2)).toList
         val expected = List(
-            Interval(0.1, 0.3, 0.1),
-            Interval(0.3, 0.5, 0.1))
+            Interval(0.1, 0.3, 0.1, 2),
+            Interval(0.3, 0.5, 0.1, 2))
         assert(split == expected)
     }
 
     test("Interval.split evenly of interval of multiple doubles and multiple partitions works") {
         val interval = Interval(0.1, 0.5, 0.1)
-        val split = interval.split(4, Some(2))
+        val split = interval.split(4, Some(2)).toList
         val expected = List(
-            Interval(0.1, 0.2, 0.1),
-            Interval(0.2, 0.3, 0.1),
-            Interval(0.3, 0.4, 0.1),
-            Interval(0.4, 0.5, 0.1))
+            Interval(0.1, 0.2, 0.1, 2),
+            Interval(0.2, 0.3, 0.1, 2),
+            Interval(0.3, 0.4, 0.1, 2),
+            Interval(0.4, 0.5, 0.1, 2))
         assert(split == expected)
     }
 
     test("Interval.split not evenly of interval of three ints works") {
         val interval = Interval(0, 3, 1)
-        val split = interval.split(2)
+        val split = interval.split(2).toList
         val expected = List(
             Interval(0, 2, 1),
             Interval(2, 3, 1))
@@ -106,8 +106,8 @@ class IntervalTest extends AnyFunSuite {
         val interval = Interval(0.1, 0.3, 0.1)
         val split = interval.split(2, Some(2))
         val expected = List(
-            Interval(0.1, 0.2, 0.1),
-            Interval(0.2, 0.3, 0.1))
+            Interval(0.1, 0.2, 0.1, 2),
+            Interval(0.2, 0.3, 0.1, 2))
 
         assert(split == expected)
     }
@@ -116,9 +116,9 @@ class IntervalTest extends AnyFunSuite {
         val interval = Interval(0.1, 0.16, 0.01)
         val split = interval.split(3, Some(3))
         val expected = List(
-            Interval(0.1, 0.12, 0.01),
-            Interval(0.12, 0.14, 0.01),
-            Interval(0.14, 0.16, 0.01))
+            Interval(0.1, 0.12, 0.01, 3),
+            Interval(0.12, 0.14, 0.01, 3),
+            Interval(0.14, 0.16, 0.01, 3))
         assert(split == expected)
     }
 

@@ -4,13 +4,17 @@ package work_split
 object Interval {
     def apply(start: Double, end: Double, step: Double): Interval = {
         assertIntervalIsCorrect(start, end, step)
-        new Interval(start, end, step)
+        new Interval(start, end, step, None)
+    }
+
+    def apply(start: Double, end: Double, step: Double, precision: Int): Interval = {
+        assertIntervalIsCorrect(start, end, step)
+        new Interval(start, end, step, Some(precision))
     }
 }
 
-case class Interval(start: Double, end: Double, step: Double) {
-
-    val size: Int = Math.ceil((end - start) / step).toInt
+case class Interval(start: Double, end: Double, step: Double, precision: Option[Int] = None) {
+    val size: Int = Math.ceil(roundNumber((end - start) / step, precision)).toInt
 
     def unfold(precision: Option[Int] = None): IntervalIterator = {
         IntervalIterator(start, end, step, precision)
@@ -20,7 +24,7 @@ case class Interval(start: Double, end: Double, step: Double) {
         Range.inclusive(0, amountOfSubIntervals - 1).map(pos => {
             val subStart = roundNumber(start + pos * Math.floor(size / amountOfSubIntervals) * step, precision)
             val subEnd = roundNumber(start + (pos + 1) * Math.floor(size / amountOfSubIntervals) * step, precision)
-            Interval(subStart, subEnd, step)
+            Interval(subStart, subEnd, step, precision)
         })
     }
 
@@ -38,12 +42,11 @@ case class Interval(start: Double, end: Double, step: Double) {
         Range.inclusive(0, amountOfSubIntervalsOfFullSize - 1).map(pos => {
             val subStart = roundNumber(start + pos * maxElemsPerInterval * step, precision)
             subEnd = roundNumber(Math.min(end, subStart + maxElemsPerInterval * step), precision)
-            Interval(subStart, subEnd, step)
+            Interval(subStart, subEnd, step, precision)
         }) ++ {
             val remainingInterval = Interval(subEnd, end, step)
             val remainingAmountOfSubIntervals = amountOfSubIntervals - amountOfSubIntervalsOfFullSize
             remainingInterval.split(remainingAmountOfSubIntervals, precision)
         }
-
     }
 }

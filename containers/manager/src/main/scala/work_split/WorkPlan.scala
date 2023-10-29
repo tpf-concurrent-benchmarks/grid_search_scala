@@ -13,16 +13,14 @@ object WorkPlan {
 case class WorkPlan(intervals: List[CircularIterator], intervalsPerIterator: List[Int]) {
     def calcCartesianProduct(): IndexedSeqView[Work] = {
         var positions = List.fill(intervals.length)(0)
-        val size = intervals.map(_.size).product
+        val size = intervals.map(_.size()).product
         var currentValues = intervals.map(_.next)
         var update = false
 
         for (_ <- (0 until size).view) yield {
-            println(s"positions: $positions, currentValues: $currentValues")
             if (update) {
                 breakable {
                     for (i <- intervals.indices.view) {
-                        println(s"i: $i")
                         positions = positions.updated(i, positions(i) + 1)
                         currentValues = currentValues.updated(i, intervals(i).next)
 
