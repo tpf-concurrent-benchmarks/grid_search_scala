@@ -41,3 +41,11 @@ run_manager_local:
 run_manager_tests:
 	cd ./containers/manager && sbt test
 	cd ../..
+
+run_worker_local:
+	cd ./containers/worker && LOCAL=true sbt run
+	cd ../..
+
+run_worker_tests:
+	cd ./containers/worker && sbt test
+	cd ../..
