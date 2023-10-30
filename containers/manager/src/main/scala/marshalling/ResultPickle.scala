@@ -24,7 +24,7 @@ implicit val MaxResultRW: ReadWriter[MaxResult] =
     (tuple: (Double, Params)) => MaxResult(tuple._1, tuple._2)
   )
 
-def parseResult( result:Result ):String ={
+def parseResult(result: Result):String ={
   result match {
     case meanResult: MeanResult => upickle.default.write(meanResult)
     case minResult: MinResult => upickle.default.write(minResult)

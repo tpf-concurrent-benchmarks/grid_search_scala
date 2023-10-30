@@ -4,7 +4,16 @@ package marshalling
 import work_split.{Interval, Work}
 
 
-case class WorkConfig(data: List[List[Double]], maxItemsPerBatch: Int) derives upickle.default.ReadWriter
+case class WorkConfig(data: List[List[Double]], maxItemsPerBatch: Int, agg: String) derives upickle.default.ReadWriter
+
+def workConfigFromJson(jsonPath: String): WorkConfig = {
+    // open file from path, from resources
+    val lines = scala.io.Source.fromResource(jsonPath).getLines.mkString
+    
+    val workConfig = upickle.default.read[WorkConfig](lines)
+
+    workConfig
+}
 
 def workFromJson(jsonPath: String): Iterator[Work] = {
     // open file from path, from resources

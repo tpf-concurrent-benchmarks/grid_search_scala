@@ -1,7 +1,7 @@
 package org.grid_search.manager
 import config.{FileConfigReader, QueuesConfig, WorkConfig}
 import work_split.{CircularIterator, Interval, Work, Aggregator}
-import marshalling.{parseWork, workFromJson, unParseResult}
+import marshalling.{parseWork, workFromJson, unParseResult, WorkParser}
 
 import com.newmotion.akka.rabbitmq
 import com.typesafe.config.ConfigFactory
@@ -16,9 +16,8 @@ def getConfigReader(): FileConfigReader = {
     }
 }
 
-def produceWork( config: WorkConfig, rabbitMq: middleware.Rabbit, workQueue: String ): Unit = {
-    val path = config.path
-    val subWorks = workFromJson(path)
+def produceWork(workParser: WorkParser, rabbitMq: middleware.Rabbit, workQueue: String): Unit = {
+    val subWorks = workParser.work.split(workParser.maxItemsPerBatch)
 
     for (subWork <- subWorks) {
         val parsed = parseWork(subWork)
@@ -27,9 +26,9 @@ def produceWork( config: WorkConfig, rabbitMq: middleware.Rabbit, workQueue: Str
     }
 }
 
-def getResults( rabbitMq: middleware.Rabbit, resultsQueue: String ): Unit = {
+def getResults(rabbitMq: middleware.Rabbit, resultsQueue: String, aggregator: Aggregator): Unit = {
     rabbitMq.setConsumer(resultsQueue, (message) => {
-        val result = unParseResult(Aggregator.Mean, new String(message, "UTF-8"))
+        val result = unParseResult(aggregator, new String(message, "UTF-8"))
         println("Received result: " + result)
         true
     })
@@ -42,8 +41,10 @@ def main(): Unit = {
 
     val rabbitMq = middleware.Rabbit(config.getMiddlewareConfig)
     val queues = config.getQueuesConfig
-    
-    produceWork(config.getWorkConfig, rabbitMq, queues.work)
+    val workPath = config.getWorkConfig.path
+    val workParser = WorkParser.fromJsonFile(workPath)
 
-    getResults(rabbitMq, queues.results)
+    produceWork(workParser, rabbitMq, queues.work)
+
+    getResults(rabbitMq, queues.results, workParser.work.aggregator)
 }
