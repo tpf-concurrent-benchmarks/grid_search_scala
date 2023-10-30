@@ -29,13 +29,8 @@ def produceWork( config: WorkConfig, rabbitMq: middleware.Rabbit, workQueue: Str
 
 def getResults( rabbitMq: middleware.Rabbit, resultsQueue: String ): Unit = {
     rabbitMq.setConsumer(resultsQueue, (message) => {
-        println("Received result: " + new String(message, "UTF-8"))
-        try {
-            val result = unParseResult(Aggregator.Mean, new String(message, "UTF-8"))
-            println("Received result: " + result)
-        } catch {
-            case e: Exception => println("Error: " + e)
-        }
+        val result = unParseResult(Aggregator.Mean, new String(message, "UTF-8"))
+        println("Received result: " + result)
         true
     })
     rabbitMq.startConsuming()

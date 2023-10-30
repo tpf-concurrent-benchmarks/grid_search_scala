@@ -33,10 +33,10 @@ def parseResult( result:Result ):String ={
 }
 
 def unParseResult( aggregator:Aggregator, string:String ): Result= {
-  string match {
-    case "MeanResult" => upickle.default.read[MeanResult](string)
-    case "MinResult" => upickle.default.read[MinResult](string)
-    case "MaxResult" => upickle.default.read[MaxResult](string)
+  aggregator match {
+    case Aggregator.Mean => upickle.default.read[MeanResult](string)
+    case Aggregator.Min => upickle.default.read[MinResult](string)
+    case Aggregator.Max => upickle.default.read[MaxResult](string)
   }
 }
 

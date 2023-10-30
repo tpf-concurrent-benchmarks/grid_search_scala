@@ -10,8 +10,8 @@ class ResultsPickleTest extends  AnyFunSuite {
 
     val baseMeanResult = work_split.MeanResult(1.0, 1)
 
-    val parsed = upickle.default.write(baseMeanResult)
-    val unparsed = upickle.default.read[work_split.MeanResult](parsed)
+    val parsed = parseResult(baseMeanResult)
+    val unparsed = unParseResult(Aggregator.Mean, parsed)
 
     assert(unparsed == baseMeanResult)
   }
