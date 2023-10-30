@@ -1,14 +1,11 @@
 package org.grid_search.manager
 import config.{FileConfigReader, QueuesConfig, WorkConfig}
-import work_split.{CircularIterator, Interval, Work}
-import marshalling.{parseWork, workFromJson}
+import work_split.{CircularIterator, Interval, Work, Aggregator}
+import marshalling.{parseWork, workFromJson, unParseResult}
 
 import com.newmotion.akka.rabbitmq
 import com.typesafe.config.ConfigFactory
 
-
-
-case class Message(data: List[List[Int]]) derives upickle.default.ReadWriter
 
 def getConfigReader(): FileConfigReader = {
     if (System.getenv("LOCAL") == "true") {
@@ -32,8 +29,9 @@ def produceWork( config: WorkConfig, rabbitMq: middleware.Rabbit, workQueue: Str
 
 def getResults( rabbitMq: middleware.Rabbit, resultsQueue: String ): Unit = {
     rabbitMq.setConsumer(resultsQueue, (message) => {
-        val data = upickle.default.read[Message](new String(message, "UTF-8"))
-        println("Received message: " + data)
+        println("Received result: " + new String(message, "UTF-8"))
+        // val result = unParseResult(Aggregator.Mean, new String(message, "UTF-8"))
+        // println("Received result: " + result)
         true
     })
     rabbitMq.startConsuming()
@@ -46,7 +44,7 @@ def main(): Unit = {
     val rabbitMq = middleware.Rabbit(config.getMiddlewareConfig)
     val queues = config.getQueuesConfig
     
-    produceWork(config.getWorkConfig, rabbitMq, queues.work)
+    //produceWork(config.getWorkConfig, rabbitMq, queues.work)
 
     getResults(rabbitMq, queues.results)
 }

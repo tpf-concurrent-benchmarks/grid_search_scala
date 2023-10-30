@@ -1,4 +1,4 @@
-package org.grid_search.worker
+package org.grid_search.manager
 package work_split
 
 sealed trait Result

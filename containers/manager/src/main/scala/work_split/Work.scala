@@ -3,6 +3,8 @@ package work_split
 
 import scala.collection.IndexedSeqView
 
+type Params = Seq[Double]
+
 
 object Work {
     def apply(intervals: List[Interval], aggregator: Aggregator = Aggregator.Mean): Work = new Work(intervals, aggregator)

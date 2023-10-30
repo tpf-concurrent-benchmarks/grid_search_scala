@@ -1,7 +1,7 @@
 package org.grid_search.worker
 import config.{FileConfigReader, QueuesConfig}
 import work_split.{CircularIterator, Interval, Work, Result}
-import marshalling.{unParseWork, workFromJson}
+import marshalling.{unParseWork, workFromJson, parseResult}
 
 import com.newmotion.akka.rabbitmq
 import com.typesafe.config.ConfigFactory
@@ -20,7 +20,11 @@ def receiveWork( rabbitMq: middleware.Rabbit, workQueue: String, resultsQueue: S
     rabbitMq.setConsumer(workQueue, (workString) => {
         val work = unParseWork(new String(workString, "UTF-8"))
 
-        val results: Result = work.calculateFor( mainFunc )
+        val result: Result = work.calculateFor( mainFunc )
+
+        val resultString = parseResult(result)
+        println("Sending result: " + resultString)
+        rabbitMq.produce(resultsQueue, resultString.getBytes("UTF-8"))
         
         true
     })
