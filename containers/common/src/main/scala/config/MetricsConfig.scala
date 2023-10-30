@@ -3,5 +3,6 @@ package config
 
 case class MetricsConfig(
                             host: String,
-                            port: Int
+                            port: Int,
+                            prefix: String
                         )
