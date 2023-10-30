@@ -6,7 +6,7 @@ compile:
 	cd ../..
 	cd ./containers/manager && sbt compile
 
-build:
+build: common_publish_local
 	docker rmi grid_search_scala_worker -f
 	docker rmi grid_search_scala_manager -f
 	docker build -t grid_search_scala_worker ./containers/worker/
