@@ -23,6 +23,10 @@ object WorkParser {
         val work = Work(intervals, aggregator)
         WorkParser(work, maxItemsPerBatch)
     }
+
+    def parse(work: Work): String = upickle.default.write(work)
+
+    def unParse(work: String): Work = upickle.default.read[Work](work)
 }
 
 case class WorkParser(work: Work, maxItemsPerBatch: Int)

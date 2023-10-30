@@ -24,7 +24,7 @@ implicit val MaxResultRW: ReadWriter[MaxResult] =
     (tuple: (Double, Params)) => MaxResult(tuple._1, tuple._2)
   )
 
-def parseResult(result: Result):String ={
+def parseResult(result: Result): String = {
   result match {
     case meanResult: MeanResult => upickle.default.write(meanResult)
     case minResult: MinResult => upickle.default.write(minResult)
@@ -32,11 +32,11 @@ def parseResult(result: Result):String ={
   }
 }
 
-def unParseResult( aggregator:Aggregator, string:String ): Result= {
+def unParseResult(aggregator:Aggregator, data: String): Result = {
   aggregator match {
-    case Aggregator.Mean => upickle.default.read[MeanResult](string)
-    case Aggregator.Min => upickle.default.read[MinResult](string)
-    case Aggregator.Max => upickle.default.read[MaxResult](string)
+    case Aggregator.Mean => upickle.default.read[MeanResult](data)
+    case Aggregator.Min => upickle.default.read[MinResult](data)
+    case Aggregator.Max => upickle.default.read[MaxResult](data)
   }
 }
 

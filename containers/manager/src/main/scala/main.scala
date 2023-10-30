@@ -1,13 +1,13 @@
 package org.grid_search.manager
 import config.{FileConfigReader, QueuesConfig, WorkConfig}
 import work_split.{CircularIterator, Interval, Work, Aggregator}
-import marshalling.{parseWork, workFromJson, unParseResult, WorkParser}
+import marshalling.{WorkParser, unParseResult}
 
 import com.newmotion.akka.rabbitmq
 import com.typesafe.config.ConfigFactory
 
 
-def getConfigReader(): FileConfigReader = {
+def getConfigReader: FileConfigReader = {
     if (System.getenv("LOCAL") == "true") {
         println("-------------- Using local config --------------")
         FileConfigReader("manager_local.conf")
@@ -20,13 +20,13 @@ def produceWork(workParser: WorkParser, rabbitMq: middleware.Rabbit, workQueue: 
     val subWorks = workParser.work.split(workParser.maxItemsPerBatch)
 
     for (subWork <- subWorks) {
-        val parsed = parseWork(subWork)
+        val parsed = WorkParser.parse(subWork)
         println("Sending work: " + parsed)
-        rabbitMq.produce(workQueue, parsed.getBytes("UTF-8"))
+        rabbitMq.produce(workQueue, parsed.getBytes)
     }
 }
 
-def getResults(rabbitMq: middleware.Rabbit, resultsQueue: String, aggregator: Aggregator): Unit = {
+def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, aggregator: Aggregator): Unit = {
     rabbitMq.setConsumer(resultsQueue, (message) => {
         val result = unParseResult(aggregator, new String(message, "UTF-8"))
         println("Received result: " + result)
@@ -37,7 +37,7 @@ def getResults(rabbitMq: middleware.Rabbit, resultsQueue: String, aggregator: Ag
 
 @main
 def main(): Unit = {
-    val config = getConfigReader()
+    val config = getConfigReader
 
     val rabbitMq = middleware.Rabbit(config.getMiddlewareConfig)
     val queues = config.getQueuesConfig
@@ -46,5 +46,5 @@ def main(): Unit = {
 
     produceWork(workParser, rabbitMq, queues.work)
 
-    getResults(rabbitMq, queues.results, workParser.work.aggregator)
+    consumeResults(rabbitMq, queues.results, workParser.work.aggregator)
 }
