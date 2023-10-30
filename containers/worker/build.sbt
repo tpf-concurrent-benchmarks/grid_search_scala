@@ -4,7 +4,7 @@ ThisBuild / scalaVersion := "3.3.1"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "manager",
+    name := "worker",
     idePackagePrefix := Some("org.grid_search.worker")
   )
 
