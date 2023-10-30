@@ -30,8 +30,12 @@ def produceWork( config: WorkConfig, rabbitMq: middleware.Rabbit, workQueue: Str
 def getResults( rabbitMq: middleware.Rabbit, resultsQueue: String ): Unit = {
     rabbitMq.setConsumer(resultsQueue, (message) => {
         println("Received result: " + new String(message, "UTF-8"))
-        // val result = unParseResult(Aggregator.Mean, new String(message, "UTF-8"))
-        // println("Received result: " + result)
+        try {
+            val result = unParseResult(Aggregator.Mean, new String(message, "UTF-8"))
+            println("Received result: " + result)
+        } catch {
+            case e: Exception => println("Error: " + e)
+        }
         true
     })
     rabbitMq.startConsuming()
@@ -44,7 +48,7 @@ def main(): Unit = {
     val rabbitMq = middleware.Rabbit(config.getMiddlewareConfig)
     val queues = config.getQueuesConfig
     
-    //produceWork(config.getWorkConfig, rabbitMq, queues.work)
+    produceWork(config.getWorkConfig, rabbitMq, queues.work)
 
     getResults(rabbitMq, queues.results)
 }
