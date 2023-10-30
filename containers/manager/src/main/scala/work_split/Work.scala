@@ -3,11 +3,12 @@ package work_split
 
 import scala.collection.IndexedSeqView
 
+
 object Work {
-    def apply(intervals: List[Interval]): Work = new Work(intervals)
+    def apply(intervals: List[Interval], aggregator: Aggregator = Aggregator.Mean): Work = new Work(intervals, aggregator)
 }
 
-case class Work(intervals: List[Interval]) {
+case class Work(intervals: List[Interval], aggregator: Aggregator) {
     val size: BigInt = calcSize()
     var current: List[Double] = intervals.map(i => i.start)
 
@@ -51,6 +52,6 @@ case class Work(intervals: List[Interval]) {
             CircularIterator(iterator, partitionsPerInterval(intervalPos), precision)
         }
 
-        WorkPlan(listOfIterator.toList).iterator
+        WorkPlan(listOfIterator.toList,aggregator).iterator
     }
 }

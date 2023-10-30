@@ -2,7 +2,7 @@ package org.grid_search.manager
 package marshalling
 
 
-import work_split.{Interval, Work}
+import work_split.{Interval, Work, Aggregator}
 import upickle.default._
 
 
@@ -16,7 +16,7 @@ implicit val intervalRW: ReadWriter[Interval] =
   )
 
 implicit val workRW: ReadWriter[Work] =
-  readwriter[Array[Interval]].bimap[Work](
-    work => work.intervals.toArray,
-    arr => Work(arr.toList)
+  readwriter [(Array[Interval], Int)].bimap[Work](
+    work => (work.intervals.toArray, work.aggregator.ordinal),
+    tuple => Work(tuple._1.toList, Aggregator.fromOrdinal(tuple._2))
   )

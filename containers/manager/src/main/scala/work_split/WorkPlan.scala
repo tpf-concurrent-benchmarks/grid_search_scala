@@ -5,12 +5,12 @@ import scala.collection.IndexedSeqView
 import scala.util.control.Breaks._
 
 object WorkPlan {
-    def apply(intervals: List[CircularIterator[Interval]]): WorkPlan = {
-        new WorkPlan(intervals)
+    def apply(intervals: List[CircularIterator[Interval]], aggregator: Aggregator): WorkPlan = {
+        new WorkPlan(intervals, aggregator)
     }
 }
 
-case class WorkPlan(intervals: List[CircularIterator[Interval]]) extends Iterator[Work] {
+case class WorkPlan(intervals: List[CircularIterator[Interval]], aggregator: Aggregator) extends Iterator[Work] {
     private val intervalsPerIterator = intervals.map(interval => BigInt(interval.size()))
     private val size: BigInt = {
         intervalsPerIterator.foldLeft(BigInt(1))((a, b) => {
@@ -22,7 +22,7 @@ case class WorkPlan(intervals: List[CircularIterator[Interval]]) extends Iterato
     private var generatedAmount = 0
 
     override def next(): Work = {
-        val result = Work(currentValues)
+        val result = Work(currentValues, aggregator)
         update()
         result
     }

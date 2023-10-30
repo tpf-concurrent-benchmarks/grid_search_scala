@@ -4,5 +4,6 @@
     [0, 10, 1],
     [0, 10, 1]
   ],
+  "agg": "MAX",
   "maxItemsPerBatch": 100
 }
