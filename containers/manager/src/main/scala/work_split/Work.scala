@@ -26,17 +26,18 @@ case class Work(intervals: List[Interval]) {
     private def calcPartitionsPerInterval(minBatches: Int): List[Int] = {
         var currPartitionsPerInterval = List.fill(intervals.length)(1)
 
-        for (intervalPos <- intervals.indices) {
+        intervals.indices.takeWhile( intervalPos => {
             val missingPartitions = calcAmountOfMissingPartitions(minBatches, currPartitionsPerInterval)
             val elements = intervals(intervalPos).size
 
             if (elements > missingPartitions) {
                 currPartitionsPerInterval = currPartitionsPerInterval.updated(intervalPos, missingPartitions)
-                return currPartitionsPerInterval
+                false
             } else {
                 currPartitionsPerInterval = currPartitionsPerInterval.updated(intervalPos, elements)
+                true
             }
-        }
+        })
         currPartitionsPerInterval
     }
 
