@@ -1,10 +1,11 @@
 package org.grid_search.manager
-import config.{FileConfigReader, QueuesConfig, WorkConfig}
-import work_split.{CircularIterator, Interval, Work, Aggregator}
-import marshalling.{WorkParser, unParseResult}
+import org.grid_search.common.config.{FileConfigReader, WorkConfig}
+import org.grid_search.common.work_split.{CircularIterator, Interval, Work, Aggregator}
+import org.grid_search.common.marshalling.{WorkParser, unParseResult}
 
-import com.newmotion.akka.rabbitmq
 import com.typesafe.config.ConfigFactory
+import org.grid_search.common.middleware
+import org.grid_search.common.config.FileConfigReader
 
 
 def getConfigReader: FileConfigReader = {
@@ -12,7 +13,7 @@ def getConfigReader: FileConfigReader = {
         println("-------------- Using local config --------------")
         FileConfigReader("manager_local.conf")
     } else {
-        FileConfigReader()
+        FileConfigReader("manager.conf")
     }
 }
 
@@ -27,7 +28,7 @@ def produceWork(workParser: WorkParser, rabbitMq: middleware.Rabbit, workQueue: 
 }
 
 def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, aggregator: Aggregator): Unit = {
-    rabbitMq.setConsumer(resultsQueue, (message) => {
+    rabbitMq.setConsumer(resultsQueue, message => {
         val result = unParseResult(aggregator, new String(message, "UTF-8"))
         println("Received result: " + result)
         true

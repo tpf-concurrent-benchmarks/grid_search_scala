@@ -1,6 +1,6 @@
 FROM hseeberger/scala-sbt:11.0.12_1.5.5_2.13.6
 
-WORKDIR /src
+WORKDIR /app
 
 # Use this for production version
 # We use volumes for development

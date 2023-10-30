@@ -38,9 +38,13 @@ services:
     depends_on:
       - rabbitmq
     volumes:
-      - "./containers/worker/:/src"
+      - "./containers/worker/src:/app/src"
+      - "./containers/worker/build.sbt:/app/build.sbt"
+      - "./containers/worker/project/build.properties:/app/project/build.properties"
+      - "./containers/worker/project/plugins.sbt:/app/project/plugins.sbt"
+      - "~/.ivy2:/root/.ivy2"
     deploy:
-      replicas: 3
+      replicas: 1
       restart_policy:
         condition: none
     environment:
@@ -52,7 +56,11 @@ services:
     depends_on:
       - rabbitmq
     volumes:
-      - "./containers/manager/:/src"
+      - "./containers/manager/src/:/app/src"
+      - "./containers/manager/build.sbt:/app/build.sbt"
+      - "./containers/manager/project/build.properties:/app/project/build.properties"
+      - "./containers/manager/project/plugins.sbt:/app/project/plugins.sbt"
+      - "~/.ivy2:/root/.ivy2"
     deploy:
       restart_policy:
         condition: none

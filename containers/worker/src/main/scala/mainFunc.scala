@@ -1,6 +1,6 @@
 package org.grid_search.worker
 
-import work_split.{Params}
+import org.grid_search.common.work_split.Params
 
 
 def mainFunc( params: Params ): Double = {

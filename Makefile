@@ -24,7 +24,7 @@ down_rabbitmq:
 
 setup: init compile build build_rabbitmq
 
-deploy:
+deploy: build
 	mkdir -p graphite
 	docker stack deploy -c docker-compose.yaml gs_scala
 
@@ -33,6 +33,9 @@ remove:
 
 manager_logs:
 	docker service logs -f gs_scala_manager
+
+worker_logs:
+	docker service logs -f gs_scala_worker
 
 run_manager_local:
 	cd ./containers/manager && LOCAL=true sbt run
@@ -48,4 +51,8 @@ run_worker_local:
 
 run_worker_tests:
 	cd ./containers/worker && sbt test
+	cd ../..
+
+common_publish_local:
+	cd ./containers/common && sbt publishLocal
 	cd ../..

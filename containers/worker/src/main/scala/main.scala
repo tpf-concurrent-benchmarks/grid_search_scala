@@ -1,9 +1,9 @@
 package org.grid_search.worker
-import config.{FileConfigReader, QueuesConfig}
-import work_split.{CircularIterator, Interval, Work, Result}
-import marshalling.{unParseWork, workFromJson, parseResult}
+import org.grid_search.common.config.{FileConfigReader, QueuesConfig}
+import org.grid_search.common.work_split.{CircularIterator, Interval, Work, Result}
+import org.grid_search.common.marshalling.{WorkParser, parseResult}
+import org.grid_search.common.middleware.Rabbit
 
-import com.newmotion.akka.rabbitmq
 import com.typesafe.config.ConfigFactory
 
 
@@ -12,15 +12,15 @@ def getConfigReader: FileConfigReader = {
         println("-------------- Using local config --------------")
         FileConfigReader("worker_local.conf")
     } else {
-        FileConfigReader()
+        FileConfigReader("worker.conf")
     }
 }
 
-def receiveWork(rabbitMq: middleware.Rabbit, workQueue: String, resultsQueue: String): Unit = {
+def receiveWork(rabbitMq: Rabbit, workQueue: String, resultsQueue: String): Unit = {
     rabbitMq.setConsumer(workQueue, workString => {
-        val work = unParseWork(new String(workString, "UTF-8"))
+        val work = WorkParser.unParse(new String(workString, "UTF-8"))
 
-        val result: Result = work.calculateFor( mainFunc )
+        val result: Result = work.calculateFor(mainFunc)
 
         val resultString = parseResult(result)
         println("Sending result: " + resultString)
@@ -35,8 +35,8 @@ def receiveWork(rabbitMq: middleware.Rabbit, workQueue: String, resultsQueue: St
 def main(): Unit = {
     val config = getConfigReader
 
-    val rabbitMq = middleware.Rabbit(config.getMiddlewareConfig)
+    val rabbitMq = Rabbit(config.getMiddlewareConfig)
     val queues = config.getQueuesConfig
     
-    receiveWork( rabbitMq, queues.work, queues.results )
+    receiveWork(rabbitMq, queues.work, queues.results)
 }
