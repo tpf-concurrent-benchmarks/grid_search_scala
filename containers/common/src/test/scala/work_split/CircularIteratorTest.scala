@@ -1,4 +1,4 @@
-package org.grid_search.manager
+package org.grid_search.common
 package work_split
 
 import org.scalatest.funsuite.AnyFunSuite
