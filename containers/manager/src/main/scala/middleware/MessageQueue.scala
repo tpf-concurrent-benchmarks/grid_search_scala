@@ -27,6 +27,7 @@ trait MessageQueue {
 
         try {
             scala.io.StdIn.readLine()
+            close()
         } catch {
             case _: InterruptedException =>
                 println("Shutting down...")
