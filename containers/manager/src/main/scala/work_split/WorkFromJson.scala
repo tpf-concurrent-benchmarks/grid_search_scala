@@ -17,3 +17,7 @@ def workFromJson(jsonPath: String): Iterator[Work] = {
     
     work.split(maxItemsPerBatch)
 }
+
+def parseWork(work: Work) = upickle.default.write(work)
+
+def unParseWork(work: String) = upickle.default.read[Work](work)

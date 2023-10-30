@@ -1,6 +1,6 @@
 package org.grid_search.manager
 import config.{FileConfigReader, QueuesConfig, WorkConfig}
-import work_split.{CircularIterator, Interval, Work, workFromJson}
+import work_split.{CircularIterator, Interval, Work, workFromJson, parseWork}
 
 import com.newmotion.akka.rabbitmq
 import com.typesafe.config.ConfigFactory
@@ -23,7 +23,7 @@ def produceWork( config: WorkConfig, rabbitMq: middleware.Rabbit, workQueue: Str
     val subWorks = workFromJson(path)
 
     for (subWork <- subWorks) {
-        val parsed = upickle.default.write(subWork)
+        val parsed = parseWork(subWork)
         println("Sending work: " + parsed)
     }
 }
