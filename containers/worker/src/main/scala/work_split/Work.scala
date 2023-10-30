@@ -3,6 +3,7 @@ package work_split
 
 import scala.collection.IndexedSeqView
 
+type Params = Seq[Double]
 
 object Work {
     def apply(intervals: List[Interval], aggregator: Aggregator = Aggregator.Mean): Work = new Work(intervals, aggregator)
@@ -55,4 +56,11 @@ case class Work(intervals: List[Interval], aggregator: Aggregator) {
         WorkPlan(listOfIterator.toList,aggregator).iterator
     }
 
+    def calculateFor( func: (Params) => Double ): Result = {
+        val results: Iterator[ (Params, Double) ] = unfold().map( params => {
+            val result = func(params)
+            (params, result)
+        })
+        aggregate(aggregator, results)
+    }
 }

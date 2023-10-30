@@ -1,6 +1,6 @@
 package org.grid_search.worker
 import config.{FileConfigReader, QueuesConfig}
-import work_split.{CircularIterator, Interval, Work}
+import work_split.{CircularIterator, Interval, Work, Result}
 import marshalling.{unParseWork, workFromJson}
 
 import com.newmotion.akka.rabbitmq
@@ -16,10 +16,11 @@ def getConfigReader(): FileConfigReader = {
     }
 }
 
-def work( rabbitMq: middleware.Rabbit, workQueue: String, resultsQueue: String ): Unit = {
+def receiveWork( rabbitMq: middleware.Rabbit, workQueue: String, resultsQueue: String ): Unit = {
     rabbitMq.setConsumer(workQueue, (workString) => {
         val work = unParseWork(new String(workString, "UTF-8"))
-        println("Received work: " + work)
+
+        val results: Result = work.calculateFor( mainFunc )
         
         true
     })
@@ -33,5 +34,5 @@ def main(): Unit = {
     val rabbitMq = middleware.Rabbit(config.getMiddlewareConfig)
     val queues = config.getQueuesConfig
     
-    work( rabbitMq, queues.work, queues.results )
+    receiveWork( rabbitMq, queues.work, queues.results )
 }
