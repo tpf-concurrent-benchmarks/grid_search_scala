@@ -5,37 +5,44 @@ import com.timgroup.statsd.{StatsDClient, NonBlockingStatsDClient}
 import config.MetricsConfig
 
 object StatsLogger {
-    var instance: Option[StatsLogger] = None
 
-    def apply(config: MetricsConfig): StatsLogger = {
-        val host = config.host
-        val port = config.port
+    var client: Option[StatsDClient] = None
 
-        val logger = new StatsLogger(new NonBlockingStatsDClient("grid_search", host, port))
-        instance = Some(logger)
-        logger
+    def init(config: MetricsConfig): Unit = {
+        client = Some(new NonBlockingStatsDClient(config.prefix, config.host, config.port))
     }
 
-    @throws(classOf[Exception])
-    def getInstance: StatsLogger = {
-        instance match {
-            case Some(logger) => logger
-            case None => throw new Exception("StatsLogger is not initialized")
+    private def withClient(f: StatsDClient => Unit): Unit = {
+        client match {
+            case Some(c) => f(c)
+            case None => handleNotInitializedError()
         }
     }
-}
 
-case class StatsLogger(client: StatsDClient) {
+    private def handleNotInitializedError(): Unit = {
+        println("StatsLogger not initialized")
+    }
 
-    def runAndMeasure[T](metricName: String, f: => T): T = {
+    def increment(metric: String): Unit = {
+        withClient(_.increment(metric))
+    }
+
+    def decrement(metric: String): Unit = {
+        withClient(_.decrement(metric))
+    }
+
+    def gauge(metric: String, value: Long): Unit = {
+        withClient(_.gauge(metric, value))
+    }
+
+    def runAndMeasure[T](metric: String, f: => T): T = {
         val startTime = System.currentTimeMillis()
         val result = f
         val endTime = System.currentTimeMillis()
 
         val duration = endTime - startTime
-        client.recordExecutionTime(metricName, duration)
+        client.recordExecutionTime(metric, duration)
 
         result
     }
 }
-

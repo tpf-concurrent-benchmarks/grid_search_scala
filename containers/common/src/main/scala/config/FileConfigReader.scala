@@ -33,10 +33,17 @@ case class FileConfigReader(filePath: String) extends ConfigReader {
     override def getMetricsConfig: MetricsConfig = {
         val metricsAddress = config.getString("metrics.address")
         val metricsPort = config.getInt("metrics.port")
+        
+        val metricsPrefix = if (config.hasPath("metrics.prefix")) {
+            config.getString("metrics.prefix")
+        } else {
+            "grid_search"
+        }
 
         MetricsConfig(
             metricsAddress,
-            metricsPort)
+            metricsPort,
+            metricsPrefix)
     }
 
     override def getWorkConfig: WorkConfig = {
