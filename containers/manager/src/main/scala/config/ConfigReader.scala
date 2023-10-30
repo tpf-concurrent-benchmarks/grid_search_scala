@@ -8,4 +8,6 @@ trait ConfigReader {
   def getQueuesConfig: QueuesConfig
 
   def getMetricsConfig: MetricsConfig
+
+  def getWorkConfig: WorkConfig
 }

@@ -36,4 +36,11 @@ case class FileConfigReader(filePath: String = "manager.conf") extends ConfigRea
             metricsAddress,
             metricsPort)
     }
+
+    override def getWorkConfig: WorkConfig = {
+        val workPath = config.getString("data.path")
+
+        WorkConfig(
+            workPath)
+    }
 }
