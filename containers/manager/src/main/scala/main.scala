@@ -21,8 +21,10 @@ def getConfigReader(): FileConfigReader = {
 def produceWork( config: WorkConfig, rabbitMq: middleware.Rabbit, workQueue: String ): Unit = {
     val path = config.path
     val subWorks = workFromJson(path)
+
     for (subWork <- subWorks) {
-        println("Sending work: " + subWork)
+        val parsed = upickle.default.write(subWork)
+        println("Sending work: " + parsed)
     }
 }
 
