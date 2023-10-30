@@ -1,9 +1,9 @@
-package org.grid_search.manager
+package org.grid_search.worker
 package config
 
 import com.typesafe.config.{Config, ConfigFactory}
 
-case class FileConfigReader(filePath: String = "manager.conf") extends ConfigReader {
+case class FileConfigReader(filePath: String = "worker.conf") extends ConfigReader {
     val config: Config = ConfigFactory.load(filePath)
 
     override def getMiddlewareConfig: MiddlewareConfig = {

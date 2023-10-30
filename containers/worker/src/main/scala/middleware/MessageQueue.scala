@@ -1,4 +1,4 @@
-package org.grid_search.manager
+package org.grid_search.worker
 package middleware
 
 // Anonymous function that takes a message and returns a boolean

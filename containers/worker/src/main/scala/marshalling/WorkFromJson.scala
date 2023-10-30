@@ -1,4 +1,4 @@
-package org.grid_search.manager
+package org.grid_search.worker
 package marshalling
 
 import work_split.{Interval, Work}

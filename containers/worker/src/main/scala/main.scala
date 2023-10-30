@@ -1,23 +1,37 @@
 package org.grid_search.worker
+import config.{FileConfigReader, QueuesConfig}
+import work_split.{CircularIterator, Interval, Work}
+import marshalling.{unParseWork, workFromJson}
+
+import com.newmotion.akka.rabbitmq
 import com.typesafe.config.ConfigFactory
 
-def loadConfig(): Unit = {
-  val config = ConfigFactory.load("worker.conf")
-  val rabbitmqAddress = config.getString("rabbitmq.address")
-  val rabbitmqPort = config.getInt("rabbitmq.port")
-  val rabbitmqUser = config.getString("rabbitmq.user")
-  val rabbitmqPassword = config.getString("rabbitmq.password")
 
-  println("rabbitmq.address: " + rabbitmqAddress)
-  println("rabbitmq.port: " + rabbitmqPort)
-  println("rabbitmq.user: " + rabbitmqUser)
-  println("rabbitmq.password: " + rabbitmqPassword)
+def getConfigReader(): FileConfigReader = {
+    if (System.getenv("LOCAL") == "true") {
+        println("-------------- Using local config --------------")
+        FileConfigReader("worker_local.conf")
+    } else {
+        FileConfigReader()
+    }
+}
 
+def work( rabbitMq: middleware.Rabbit, workQueue: String, resultsQueue: String ): Unit = {
+    rabbitMq.setConsumer(workQueue, (workString) => {
+        val work = unParseWork(new String(workString, "UTF-8"))
+        println("Received work: " + work)
+        
+        true
+    })
+    rabbitMq.startConsuming()
 }
 
 @main
 def main(): Unit = {
-  println("Hello world!")
+    val config = getConfigReader()
 
-  loadConfig()
+    val rabbitMq = middleware.Rabbit(config.getMiddlewareConfig)
+    val queues = config.getQueuesConfig
+    
+    work( rabbitMq, queues.work, queues.results )
 }

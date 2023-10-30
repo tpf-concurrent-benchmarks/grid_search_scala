@@ -1,4 +1,4 @@
-package org.grid_search.manager
+package org.grid_search.worker
 package work_split
 
 import scala.collection.IndexedSeqView
@@ -54,4 +54,5 @@ case class Work(intervals: List[Interval], aggregator: Aggregator) {
 
         WorkPlan(listOfIterator.toList,aggregator).iterator
     }
+
 }
