@@ -7,7 +7,7 @@ import com.newmotion.akka.rabbitmq
 import com.typesafe.config.ConfigFactory
 
 
-def getConfigReader(): FileConfigReader = {
+def getConfigReader: FileConfigReader = {
     if (System.getenv("LOCAL") == "true") {
         println("-------------- Using local config --------------")
         FileConfigReader("worker_local.conf")
@@ -16,8 +16,8 @@ def getConfigReader(): FileConfigReader = {
     }
 }
 
-def receiveWork( rabbitMq: middleware.Rabbit, workQueue: String, resultsQueue: String ): Unit = {
-    rabbitMq.setConsumer(workQueue, (workString) => {
+def receiveWork(rabbitMq: middleware.Rabbit, workQueue: String, resultsQueue: String): Unit = {
+    rabbitMq.setConsumer(workQueue, workString => {
         val work = unParseWork(new String(workString, "UTF-8"))
 
         val result: Result = work.calculateFor( mainFunc )
@@ -25,7 +25,7 @@ def receiveWork( rabbitMq: middleware.Rabbit, workQueue: String, resultsQueue: S
         val resultString = parseResult(result)
         println("Sending result: " + resultString)
         rabbitMq.produce(resultsQueue, resultString.getBytes("UTF-8"))
-        
+
         true
     })
     rabbitMq.startConsuming()
@@ -33,7 +33,7 @@ def receiveWork( rabbitMq: middleware.Rabbit, workQueue: String, resultsQueue: S
 
 @main
 def main(): Unit = {
-    val config = getConfigReader()
+    val config = getConfigReader
 
     val rabbitMq = middleware.Rabbit(config.getMiddlewareConfig)
     val queues = config.getQueuesConfig

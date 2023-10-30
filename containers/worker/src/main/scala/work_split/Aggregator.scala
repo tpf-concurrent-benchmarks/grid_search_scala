@@ -17,17 +17,20 @@ def aggregate( aggregator: Aggregator, values: Iterator[ (Params, Double) ] ): R
 
 def aggregateMean( values: Iterator[ (Params, Double) ] ): MeanResult = {
     // NOTE: Values can only be iterated once, so we can't use values.sum or values.length
-    val (sum, count) = values.foldLeft( (0.0, 0) )( (acc, value) => (acc._1 + value._2, acc._2 + 1) )
-    val mean = sum / count
+    val (mean, count) = values.map(_._2).foldLeft((0.0, 0)) ({
+        case ((accCurrAvg, accCount), value) =>
+            val accNextAvg = accCurrAvg + (value - accCurrAvg) / (accCount + 1)
+            (accNextAvg, accCount + 1)
+    })
     MeanResult(mean, count)
 }
 
 def aggregateMax( values: Iterator[ (Params, Double) ] ): MaxResult = {
-    val max = values.maxBy( _._2 )
-    MaxResult(max._2, max._1)
+    val (maxParams, maxValue) = values.maxBy(_._2)
+    MaxResult(maxValue, maxParams)
 }
 
 def aggregateMin( values: Iterator[ (Params, Double) ] ): MinResult = {
-    val min = values.minBy( _._2 )
-    MinResult(min._2, min._1)
+    val (minParams, minValue) = values.minBy(_._2)
+    MinResult(minValue, minParams)
 }

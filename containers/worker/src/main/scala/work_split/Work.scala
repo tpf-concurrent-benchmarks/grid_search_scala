@@ -56,10 +56,9 @@ case class Work(intervals: List[Interval], aggregator: Aggregator) {
         WorkPlan(listOfIterator.toList,aggregator).iterator
     }
 
-    def calculateFor( func: (Params) => Double ): Result = {
-        val results: Iterator[ (Params, Double) ] = unfold().map( params => {
-            val result = func(params)
-            (params, result)
+    def calculateFor(func: Params => Double): Result = {
+        val results: Iterator[(Params, Double)] = unfold().map( params => {
+            (params, func(params))
         })
         aggregate(aggregator, results)
     }
