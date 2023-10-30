@@ -1,5 +1,7 @@
 package org.grid_search.manager
-package work_split
+package marshalling
+
+import work_split.{Interval, Work}
 
 
 case class WorkConfig(data: List[List[Double]], maxItemsPerBatch: Int) derives upickle.default.ReadWriter
@@ -18,6 +20,6 @@ def workFromJson(jsonPath: String): Iterator[Work] = {
     work.split(maxItemsPerBatch)
 }
 
-def parseWork(work: Work) = upickle.default.write(work)
+def parseWork(work: Work):String = upickle.default.write(work)
 
-def unParseWork(work: String) = upickle.default.read[Work](work)
+def unParseWork(work: String):Work = upickle.default.read[Work](work)

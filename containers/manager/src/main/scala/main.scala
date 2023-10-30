@@ -1,6 +1,7 @@
 package org.grid_search.manager
 import config.{FileConfigReader, QueuesConfig, WorkConfig}
-import work_split.{CircularIterator, Interval, Work, workFromJson, parseWork}
+import work_split.{CircularIterator, Interval, Work}
+import marshalling.{parseWork, workFromJson}
 
 import com.newmotion.akka.rabbitmq
 import com.typesafe.config.ConfigFactory
@@ -25,6 +26,7 @@ def produceWork( config: WorkConfig, rabbitMq: middleware.Rabbit, workQueue: Str
     for (subWork <- subWorks) {
         val parsed = parseWork(subWork)
         println("Sending work: " + parsed)
+        rabbitMq.produce(workQueue, parsed.getBytes("UTF-8"))
     }
 }
 

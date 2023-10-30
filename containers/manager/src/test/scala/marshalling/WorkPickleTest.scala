@@ -1,11 +1,12 @@
 package org.grid_search.manager
-package work_split
+package marshalling
 
+import work_split.{Interval, Work}
 import org.scalatest.funsuite.AnyFunSuite
 
 class WorkPickleTest extends AnyFunSuite {
     
-    test("Can pickle and un-pickle intervals") {
+    test("Interval pickling works") {
 
       val baseInterval = Interval(0, 10, 1)
 
@@ -15,9 +16,19 @@ class WorkPickleTest extends AnyFunSuite {
       assert(unparsed == baseInterval)
     }
 
-    test("Can pickle and un-pickle work") {
+    test("Work pickling works") {
 
       val baseWork = Work(List(Interval(0, 10, 1), Interval(10, 20, 1)))
+
+      val parsed = upickle.default.write(baseWork)
+      val unparsed = upickle.default.read[Work](parsed)
+
+      assert(unparsed == baseWork)
+    }
+
+    test("Work pickling works, with precision") {
+
+      val baseWork = Work(List(Interval(0, 10, 1, 3), Interval(10, 20, 1, 3)))
 
       val parsed = upickle.default.write(baseWork)
       val unparsed = upickle.default.read[Work](parsed)

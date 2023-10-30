@@ -1,6 +1,8 @@
 package org.grid_search.manager
-package work_split
+package marshalling
 
+
+import work_split.{Interval, Work}
 import upickle.default._
 
 
