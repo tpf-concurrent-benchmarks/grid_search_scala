@@ -43,10 +43,11 @@ down_graphite:
 setup: init compile build build_rabbitmq
 .PHONY: setup
 
-deploy: build down_rabbitmq down_graphite remove
+deploy: remove build down_rabbitmq down_graphite
 	mkdir -p graphite
-	docker stack deploy -c docker-compose.yaml gs_scala
+	MY_UID="$(shell id -u)" MY_GID="$(shell id -g)" docker stack deploy -c docker-compose.yaml gs_scala
 .PHONY: deploy
+
 
 remove:
 	if docker stack ls | grep -q gs_scala; then \

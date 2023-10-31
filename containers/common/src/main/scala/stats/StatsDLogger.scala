@@ -42,7 +42,7 @@ object StatsDLogger extends MetricsLogger {
         val endTime = System.currentTimeMillis()
 
         val duration = endTime - startTime
-        withClient(_.recordExecutionTime(metric, duration))
+        withClient(_.recordExecutionTime(metric, duration.longValue()))
 
         result
     }
