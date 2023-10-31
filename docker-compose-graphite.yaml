@@ -1,0 +1,12 @@
+version: "3.7"
+
+services:
+  graphite:
+    image: graphiteapp/graphite-statsd:1.1.10-4
+    volumes:
+      - "./statsd.config.js:/opt/statsd/config.js"
+      - "./graphite.storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf"
+      - "./graphite:/opt/graphite/storage/"
+    ports:
+      - "8080:8080"
+      - "8125:8125/udp"

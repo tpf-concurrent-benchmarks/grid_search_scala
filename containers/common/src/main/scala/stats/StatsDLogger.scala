@@ -4,11 +4,12 @@ package stats
 import com.timgroup.statsd.{StatsDClient, NonBlockingStatsDClient}
 import config.MetricsConfig
 
-object StatsLogger {
+object StatsDLogger extends MetricsLogger {
 
     var client: Option[StatsDClient] = None
 
     def init(config: MetricsConfig): Unit = {
+        println(s"Initializing StatsDLogger with prefix: ${config.prefix} in ${config.host}:${config.port}")
         client = Some(new NonBlockingStatsDClient(config.prefix, config.host, config.port))
     }
 
@@ -23,25 +24,25 @@ object StatsLogger {
         println("StatsLogger not initialized")
     }
 
-    def increment(metric: String): Unit = {
+    override def increment(metric: String): Unit = {
         withClient(_.increment(metric))
     }
 
-    def decrement(metric: String): Unit = {
+    override def decrement(metric: String): Unit = {
         withClient(_.decrement(metric))
     }
 
-    def gauge(metric: String, value: Long): Unit = {
+    override def gauge(metric: String, value: Long): Unit = {
         withClient(_.gauge(metric, value))
     }
 
-    def runAndMeasure[T](metric: String, f: => T): T = {
+    override def runAndMeasure[T](metric: String, f: => T): T = {
         val startTime = System.currentTimeMillis()
         val result = f
         val endTime = System.currentTimeMillis()
 
         val duration = endTime - startTime
-        client.recordExecutionTime(metric, duration)
+        withClient(_.recordExecutionTime(metric, duration))
 
         result
     }

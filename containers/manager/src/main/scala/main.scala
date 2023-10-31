@@ -6,14 +6,19 @@ import org.grid_search.common.marshalling.{WorkParser, unParseResult}
 import com.typesafe.config.ConfigFactory
 import org.grid_search.common.middleware
 import org.grid_search.common.config.FileConfigReader
-
+import org.grid_search.common.stats.{StatsDLogger, getLogger}
 
 def getConfigReader: FileConfigReader = {
     if (System.getenv("LOCAL") == "true") {
         println("-------------- Using local config --------------")
         FileConfigReader("manager_local.conf")
     } else {
-        FileConfigReader("manager.conf")
+        val config = ConfigFactory
+            .parseString(s"metrics.prefix: ${System.getenv("NODE_ID")}")
+            .withFallback(ConfigFactory.load("manager.conf"))
+        val reader = FileConfigReader(config)
+        StatsDLogger.init(reader.getMetricsConfig)
+        reader
     }
 }
 

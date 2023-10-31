@@ -5,8 +5,23 @@ import config.{MiddlewareConfig, QueuesConfig}
 
 import com.typesafe.config.{Config, ConfigFactory}
 
-case class FileConfigReader(filePath: String) extends ConfigReader {
-    val config: Config = ConfigFactory.load(filePath)
+object FileConfigReader {
+    def apply(): FileConfigReader = {
+        val config = ConfigFactory.load()
+        FileConfigReader(config)
+    }
+
+    def apply(config: Config): FileConfigReader = {
+        new FileConfigReader(config)
+    }
+
+    def apply(fileName: String): FileConfigReader = {
+        val config = ConfigFactory.load(fileName)
+        FileConfigReader(config)
+    }
+}
+
+case class FileConfigReader(config: Config) extends ConfigReader {
 
     override def getMiddlewareConfig: MiddlewareConfig = {
         val middlewareHost = config.getString("middleware.host")
@@ -31,7 +46,7 @@ case class FileConfigReader(filePath: String) extends ConfigReader {
     }
 
     override def getMetricsConfig: MetricsConfig = {
-        val metricsAddress = config.getString("metrics.address")
+        val metricsAddress = config.getString("metrics.host")
         val metricsPort = config.getInt("metrics.port")
         
         val metricsPrefix = if (config.hasPath("metrics.prefix")) {

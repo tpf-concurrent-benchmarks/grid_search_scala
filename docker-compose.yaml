@@ -10,6 +10,8 @@ services:
       - "./statsd.config.js:/opt/statsd/config.js"
       - "./graphite.storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf"
       - "./graphite:/opt/graphite/storage/"
+    ports:
+      - "8080:8080"
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.0
@@ -25,7 +27,8 @@ services:
   rabbitmq:
     image: rostov_rabbitmq
     ports:
-      - 15672:15672
+      - "15672:15672"
+      - "5672:5672"
     healthcheck:
       test: rabbitmq-diagnostics check_port_connectivity
       interval: 5s
@@ -49,6 +52,7 @@ services:
         condition: none
     environment:
       - LOCAL=${LOCAL}
+      - NODE_ID=worker_{{.Task.Slot}}
 
 
   manager:
@@ -66,3 +70,4 @@ services:
         condition: none
     environment:
       - LOCAL=${LOCAL}
+      - NODE_ID=manager

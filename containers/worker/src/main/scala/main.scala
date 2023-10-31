@@ -1,10 +1,11 @@
 package org.grid_search.worker
 import org.grid_search.common.config.{FileConfigReader, QueuesConfig}
-import org.grid_search.common.work_split.{CircularIterator, Interval, Work, Result}
+import org.grid_search.common.work_split.{CircularIterator, Interval, Result, Work}
 import org.grid_search.common.marshalling.{WorkParser, parseResult}
 import org.grid_search.common.middleware.Rabbit
-
+import org.grid_search.common.stats.StatsDLogger
 import com.typesafe.config.ConfigFactory
+
 
 
 def getConfigReader: FileConfigReader = {
@@ -12,7 +13,13 @@ def getConfigReader: FileConfigReader = {
         println("-------------- Using local config --------------")
         FileConfigReader("worker_local.conf")
     } else {
-        FileConfigReader("worker.conf")
+        val config = ConfigFactory
+            .parseString(s"metrics.prefix: ${System.getenv("NODE_ID")}")
+            .withFallback(ConfigFactory.load("worker.conf"))
+        val reader = FileConfigReader(config)
+        StatsDLogger.init(reader.getMetricsConfig)
+        reader
+
     }
 }
 

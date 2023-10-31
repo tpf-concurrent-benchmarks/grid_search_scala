@@ -1,5 +1,6 @@
 package org.grid_search.common
 package work_split
+import stats.getLogger
 
 enum Aggregator {
     case Mean
@@ -8,11 +9,11 @@ enum Aggregator {
 }
 
 def aggregate( aggregator: Aggregator, values: Iterator[ (Params, Double) ] ): Result = {
-    aggregator match {
+    getLogger.runAndMeasure("work_time", aggregator match {
         case Aggregator.Mean => aggregateMean(values)
         case Aggregator.Max => aggregateMax(values)
         case Aggregator.Min => aggregateMin(values)
-    }
+    })
 }
 
 def aggregateMean( values: Iterator[ (Params, Double) ] ): MeanResult = {

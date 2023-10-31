@@ -5,16 +5,21 @@ import com.newmotion.akka.rabbitmq
 import com.rabbitmq.client.{Channel, Connection}
 import config.MiddlewareConfig
 
-class Rabbit(config: MiddlewareConfig) extends MessageQueue {
-    private val factory: rabbitmq.ConnectionFactory = new rabbitmq.ConnectionFactory()
+object Rabbit {
+    def apply(config: MiddlewareConfig): Rabbit = {
+        val factory: rabbitmq.ConnectionFactory = new rabbitmq.ConnectionFactory()
 
-    factory.setHost(config.host)
-    factory.setPort(config.port)
-    factory.setUsername(config.user)
-    factory.setPassword(config.password)
+        factory.setHost(config.host)
+        factory.setPort(config.port)
+        factory.setUsername(config.user)
+        factory.setPassword(config.password)
 
-    private val connection: rabbitmq.Connection = factory.newConnection()
+        val connection: rabbitmq.Connection = factory.newConnection()
+        new Rabbit(connection)
+    }
+}
 
+class Rabbit(connection: rabbitmq.Connection) extends MessageQueue {
     private val channel: rabbitmq.Channel = connection.createChannel()
     private var declaredQueues: Set[String] = Set[String]()
 
