@@ -33,3 +33,5 @@ metals.sbt
 
 # Other
 graphite/
+compilation/manager/
+compilation/worker/
