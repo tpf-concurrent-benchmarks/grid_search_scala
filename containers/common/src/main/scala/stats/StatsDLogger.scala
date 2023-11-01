@@ -5,12 +5,26 @@ import com.timgroup.statsd.{StatsDClient, NonBlockingStatsDClient}
 import config.MetricsConfig
 
 object StatsDLogger extends MetricsLogger {
-
     var client: Option[StatsDClient] = None
+    val maxConnectionAttempts = 10
 
     def init(config: MetricsConfig): Unit = {
         println(s"Initializing StatsDLogger with prefix: ${config.prefix} in ${config.host}:${config.port}")
-        client = Some(new NonBlockingStatsDClient(config.prefix, config.host, config.port))
+        Range.inclusive(1, maxConnectionAttempts).takeWhile(attempt => {
+            try {
+                client = Some(new NonBlockingStatsDClient(config.prefix, config.host, config.port))
+                false
+            } catch {
+                case _: Exception =>
+                    println(s"Failed to connect to StatsD. Attempt $attempt/$maxConnectionAttempts")
+                    Thread.sleep(5000)
+                    true
+            }
+        })
+        client match {
+            case Some(_) => println("StatsDLogger initialized")
+            case None => throw new Exception("Failed to connect to StatsD")
+        }
     }
 
     private def withClient(f: StatsDClient => Unit): Unit = {

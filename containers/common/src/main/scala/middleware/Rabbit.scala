@@ -6,6 +6,8 @@ import com.rabbitmq.client.{Channel, Connection}
 import config.MiddlewareConfig
 
 object Rabbit {
+    private val maxConnectionAttempts = 10
+
     def apply(config: MiddlewareConfig): Rabbit = {
         val factory: rabbitmq.ConnectionFactory = new rabbitmq.ConnectionFactory()
 
@@ -14,8 +16,23 @@ object Rabbit {
         factory.setUsername(config.user)
         factory.setPassword(config.password)
 
-        val connection: rabbitmq.Connection = factory.newConnection()
-        new Rabbit(connection)
+        var rabbit: Option[Rabbit] = None
+        Range.inclusive(1, maxConnectionAttempts).takeWhile(attempt => {
+            try {
+                val connection: rabbitmq.Connection = factory.newConnection()
+                rabbit = Some(new Rabbit(connection))
+                false
+            } catch {
+                case _: Exception =>
+                    println(s"Failed to connect to RabbitMQ. Attempt $attempt/$maxConnectionAttempts")
+                    Thread.sleep(5000)
+                    true
+            }
+        })
+        rabbit match {
+            case Some(r) => r
+            case None => throw new Exception("Failed to connect to RabbitMQ")
+        }
     }
 }
 

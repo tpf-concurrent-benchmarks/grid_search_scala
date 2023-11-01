@@ -1,12 +1,10 @@
 package org.grid_search.manager
-import org.grid_search.common.config.{FileConfigReader, WorkConfig}
-import org.grid_search.common.work_split.{CircularIterator, Interval, Work, Aggregator}
-import org.grid_search.common.marshalling.{WorkParser, unParseResult}
-
 import com.typesafe.config.ConfigFactory
-import org.grid_search.common.middleware
 import org.grid_search.common.config.FileConfigReader
-import org.grid_search.common.stats.{StatsDLogger, getLogger}
+import org.grid_search.common.marshalling.{WorkParser, unParseResult}
+import org.grid_search.common.middleware
+import org.grid_search.common.stats.StatsDLogger
+import org.grid_search.common.work_split.Aggregator
 
 def getConfigReader: FileConfigReader = {
     if (System.getenv("LOCAL") == "true") {

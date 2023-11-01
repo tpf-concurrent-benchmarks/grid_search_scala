@@ -1,7 +1,6 @@
 package org.grid_search.common
 package work_split
 
-import scala.collection.IndexedSeqView
 import scala.util.control.Breaks._
 
 object WorkPlan {

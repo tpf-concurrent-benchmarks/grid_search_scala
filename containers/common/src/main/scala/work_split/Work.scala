@@ -1,8 +1,6 @@
 package org.grid_search.common
 package work_split
 
-import scala.collection.IndexedSeqView
-import stats.getLogger
 
 type Params = Seq[Double]
 

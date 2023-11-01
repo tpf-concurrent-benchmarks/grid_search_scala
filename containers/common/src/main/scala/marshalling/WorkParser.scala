@@ -10,7 +10,11 @@ object WorkParser {
         val lines = scala.io.Source.fromResource(jsonPath).getLines.mkString
 
         val workConfig = upickle.default.read[WorkConfig](lines)
-        val intervals = workConfig.data.map(i => Interval(i.head, i(1), i(2)))
+        val intervals = workConfig.data.map({
+            case List(start, end, step, precision) => Interval(start, end, step, precision.toInt)
+            case List(start, end, step) => Interval(start, end, step)
+            case _ => throw new Exception("Wrong data format")
+        })
         val maxItemsPerBatch = workConfig.maxItemsPerBatch
         val aggregator = {
             workConfig.agg match {
