@@ -8,7 +8,7 @@ import config.MiddlewareConfig
 object Rabbit {
     private val maxConnectionAttempts = 10
 
-    def apply(config: MiddlewareConfig): Rabbit = {
+    def apply(config: MiddlewareConfig, prefetchCount: Int): Rabbit = {
         val factory: rabbitmq.ConnectionFactory = new rabbitmq.ConnectionFactory()
 
         factory.setHost(config.host)
@@ -20,7 +20,7 @@ object Rabbit {
         Range.inclusive(1, maxConnectionAttempts).takeWhile(attempt => {
             try {
                 val connection: rabbitmq.Connection = factory.newConnection()
-                rabbit = Some(new Rabbit(connection))
+                rabbit = Some(new Rabbit(connection, prefetchCount))
                 false
             } catch {
                 case _: Exception =>
@@ -34,10 +34,15 @@ object Rabbit {
             case None => throw new Exception("Failed to connect to RabbitMQ")
         }
     }
+
+    def apply(config: MiddlewareConfig): Rabbit = {
+        Rabbit.apply(config, 10)
+    }
 }
 
-class Rabbit(connection: rabbitmq.Connection) extends MessageQueue {
+class Rabbit(connection: rabbitmq.Connection, prefetchCount: Int) extends MessageQueue {
     private val channel: rabbitmq.Channel = connection.createChannel()
+    channel.basicQos(prefetchCount)
     private var declaredQueues: Set[String] = Set[String]()
 
     private def declareQueue(queue: String): Unit = {

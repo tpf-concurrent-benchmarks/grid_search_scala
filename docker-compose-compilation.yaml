@@ -14,7 +14,6 @@ services:
       - "~/.ivy2:/root/.ivy2"
       - "./compilation/worker:/app/target"
 
-
   manager_compilation:
     build:
       context: .
@@ -27,3 +26,15 @@ services:
       - "./containers/manager/project/plugins.sbt:/app/project/plugins.sbt"
       - "~/.ivy2:/root/.ivy2"
       - "./compilation/manager:/app/target"
+
+  common_compilation:
+    build:
+      context: .
+      dockerfile: ./compilation/Dockerfile
+    command: sbt assembly
+    volumes:
+      - "./containers/common/src/:/app/src"
+      - "./containers/common/build.sbt:/app/build.sbt"
+      - "./containers/common/project/build.properties:/app/project/build.properties"
+      - "./containers/common/project/plugins.sbt:/app/project/plugins.sbt"
+      - "./compilation/common:/app/target"

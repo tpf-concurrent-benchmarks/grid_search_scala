@@ -7,9 +7,7 @@ services:
       - "./statsd.config.js:/opt/statsd/config.js:ro"
       - "./graphite.storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf:ro"
       - "./graphite:/opt/graphite/storage/:rw"
-    ports:
-      - "8080:8080"
-      - "8125:8125/udp"
+    user: ${MY_UID}:${MY_GID}
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.0
@@ -29,9 +27,6 @@ services:
 
   rabbitmq:
     image: rostov_rabbitmq
-    ports:
-      - "15672:15672"
-      - "5672:5672"
     healthcheck:
       test: rabbitmq-diagnostics check_port_connectivity
       interval: 5s
@@ -44,14 +39,8 @@ services:
     depends_on:
       - rabbitmq
       - graphite
-    volumes:
-      - "./containers/worker/src:/app/src"
-      - "./containers/worker/build.sbt:/app/build.sbt"
-      - "./containers/worker/project/build.properties:/app/project/build.properties"
-      - "./containers/worker/project/plugins.sbt:/app/project/plugins.sbt"
-      - "~/.ivy2:/root/.ivy2"
     deploy:
-      replicas: 4
+      replicas: 2
       restart_policy:
         condition: none
     environment:
@@ -63,12 +52,6 @@ services:
     depends_on:
       - rabbitmq
       - graphite
-    volumes:
-      - "./containers/manager/src/:/app/src"
-      - "./containers/manager/build.sbt:/app/build.sbt"
-      - "./containers/manager/project/build.properties:/app/project/build.properties"
-      - "./containers/manager/project/plugins.sbt:/app/project/plugins.sbt"
-      - "~/.ivy2:/root/.ivy2"
     deploy:
       restart_policy:
         condition: none
