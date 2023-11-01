@@ -8,6 +8,8 @@ services:
       - "./graphite.storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf:ro"
       - "./graphite:/opt/graphite/storage/:rw"
     user: ${MY_UID}:${MY_GID}
+    ports:
+      - "8080:8080"
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.0
@@ -33,6 +35,8 @@ services:
       timeout: 3s
       retries: 10
       start_period: 50s
+    ports:
+      - "15672:15672"
 
   worker:
     image: grid_search_scala_worker

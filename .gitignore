@@ -33,6 +33,7 @@ metals.sbt
 
 # Other
 graphite/
+graphite_remote/
 compilation/manager/
 compilation/worker/
 compilation/common/

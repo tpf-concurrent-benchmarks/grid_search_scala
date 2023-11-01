@@ -15,7 +15,7 @@ jar:
 	cp ./compilation/worker/scala-3.3.1/worker.jar ./containers/worker/worker.jar
 .PHONY: jar
 
-build: jar
+build:
 	docker rmi grid_search_scala_worker -f
 	docker rmi grid_search_scala_manager -f
 	docker build -t grid_search_scala_worker -f ./containers/worker/Dockerfile ./containers/worker
@@ -37,7 +37,7 @@ down_rabbitmq:
 .PHONY: down_rabbitmq
 
 run_graphite: down_graphite
-	docker stack deploy -c docker-compose-graphite.yaml graphite
+	docker compose -f docker-compose-graphite.yaml up --build -d
 .PHONY: run_graphite
 
 down_graphite:
@@ -54,22 +54,11 @@ deploy: remove build down_rabbitmq down_graphite
 	MY_UID="$(shell id -u)" MY_GID="$(shell id -g)" docker stack deploy -c docker-compose.yaml gs_scala
 .PHONY: deploy
 
-deploy_server: remove_server
-	mkdir -p graphite
-	MY_UID="$(shell id -u)" MY_GID="$(shell id -g)" docker stack deploy -c docker-compose-server.yaml gs_scala
-.PHONY: deploy_server
-
 remove:
 	if docker stack ls | grep -q gs_scala; then \
             docker stack rm gs_scala; \
 	fi
 .PHONY: remove
-
-remove_server:
-	if docker stack ls | grep -q gs_scala; then \
-			docker stack rm gs_scala; \
-	fi
-.PHONY: remove_server
 
 manager_logs:
 	docker service logs -f gs_scala_manager
@@ -103,3 +92,52 @@ common_publish_local:
 	cd ./containers/common && sbt publishLocal
 	cd ../..
 .PHONY: common_publish_local
+
+# Server specific
+
+upload_jars: jar
+	scp containers/manager/manager.jar efoppiano@atom.famaf.unc.edu.ar:gs_scala/grid_search_scala/containers/manager
+	scp containers/worker/worker.jar efoppiano@atom.famaf.unc.edu.ar:gs_scala/grid_search_scala/containers/worker
+.PHONY: upload_jars
+
+## Use *_remote if you are running them from your local machine
+build_remote: upload_jars
+	ssh efoppiano@atom.famaf.unc.edu.ar make build_server
+.PHONY: build_remote
+
+deploy_remote: remove_remote build_remote
+	ssh efoppiano@atom.famaf.unc.edu.ar make deploy_server
+.PHONY: deploy_remote
+
+remove_remote:
+	ssh efoppiano@atom.famaf.unc.edu.ar make remove_server
+.PHONY: remove_remote
+
+## Use *_server if you are running them from the server (remember to upload the jars first)
+build_server:
+	docker rmi grid_search_scala_worker -f
+	docker rmi grid_search_scala_manager -f
+	docker build -t grid_search_scala_worker -f ./containers/worker/Dockerfile ./containers/worker
+	docker build -t grid_search_scala_manager -f ./containers/manager/Dockerfile ./containers/manager
+.PHONY: build_server
+
+deploy_server: remove_server build_server
+	mkdir -p graphite
+	MY_UID="$(shell id -u)" MY_GID="$(shell id -g)" docker stack deploy -c docker-compose-server.yaml gs_scala
+.PHONY: deploy_server
+
+remove_server:
+	if docker stack ls | grep -q gs_scala; then \
+			docker stack rm gs_scala; \
+	fi
+.PHONY: remove_server
+
+## Tunneling
+
+tunnel_rabbitmq:
+	ssh -L 15672:127.0.0.1:15672 efoppiano@atom.famaf.unc.edu.ar
+.PHONY: tunnel_rabbitmq
+
+tunnel_graphite:
+	ssh -L 8080:127.0.0.1:8080 efoppiano@atom.famaf.unc.edu.ar
+.PHONY: tunnel_graphite
