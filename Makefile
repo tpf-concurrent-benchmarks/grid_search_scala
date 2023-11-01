@@ -100,17 +100,38 @@ upload_jars: jar
 	scp containers/worker/worker.jar efoppiano@atom.famaf.unc.edu.ar:gs_scala/grid_search_scala/containers/worker
 .PHONY: upload_jars
 
+REMOTE_WORK_DIR = gs_scala/grid_search_scala
+
 ## Use *_remote if you are running them from your local machine
+## Do not use those that start with _
+_build_remote:
+	docker rmi grid_search_scala_worker -f
+	docker rmi grid_search_scala_manager -f
+	docker build -t grid_search_scala_worker -f ./containers/worker/Dockerfile ./containers/worker
+	docker build -t grid_search_scala_manager -f ./containers/manager/Dockerfile ./containers/manager
+.PHONY: _build_remote
+
 build_remote: upload_jars
-	ssh efoppiano@atom.famaf.unc.edu.ar make build_server
+	ssh efoppiano@atom.famaf.unc.edu.ar 'cd $(REMOTE_WORK_DIR) && make _build_remote'
 .PHONY: build_remote
 
+_deploy_remote:
+	mkdir -p graphite
+	MY_UID="$(shell id -u)" MY_GID="$(shell id -g)" docker stack deploy -c docker-compose-server.yaml gs_scala
+.PHONY: _deploy_remote
+
 deploy_remote: remove_remote build_remote
-	ssh efoppiano@atom.famaf.unc.edu.ar make deploy_server
+	ssh efoppiano@atom.famaf.unc.edu.ar 'cd $(REMOTE_WORK_DIR) && make _deploy_remote'
 .PHONY: deploy_remote
 
+_remove_remote:
+	if docker stack ls | grep -q gs_scala; then \
+			docker stack rm gs_scala; \
+	fi
+.PHONY: _remove_remote
+
 remove_remote:
-	ssh efoppiano@atom.famaf.unc.edu.ar make remove_server
+	ssh efoppiano@atom.famaf.unc.edu.ar 'cd $(REMOTE_WORK_DIR) && make _remove_remote'
 .PHONY: remove_remote
 
 ## Use *_server if you are running them from the server (remember to upload the jars first)
