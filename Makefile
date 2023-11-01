@@ -8,16 +8,18 @@ compile:
 	cd ./containers/manager && sbt compile
 .PHONY: compile
 
-jar: common_publish_local
+jar:
 	docker compose -f docker-compose-compilation.yaml up --build
 	docker compose -f docker-compose-compilation.yaml down
+	cp ./compilation/manager/scala-3.3.1/manager.jar ./containers/manager/manager.jar
+	cp ./compilation/worker/scala-3.3.1/worker.jar ./containers/worker/worker.jar
 .PHONY: jar
 
-build: common_publish_local jar
+build: jar
 	docker rmi grid_search_scala_worker -f
 	docker rmi grid_search_scala_manager -f
-	docker build -t grid_search_scala_worker -f ./containers/worker/Dockerfile .
-	docker build -t grid_search_scala_manager -f ./containers/manager/Dockerfile .
+	docker build -t grid_search_scala_worker -f ./containers/worker/Dockerfile ./containers/worker
+	docker build -t grid_search_scala_manager -f ./containers/manager/Dockerfile ./containers/manager
 .PHONY: build
 
 build_rabbitmq:
@@ -52,12 +54,22 @@ deploy: remove build down_rabbitmq down_graphite
 	MY_UID="$(shell id -u)" MY_GID="$(shell id -g)" docker stack deploy -c docker-compose.yaml gs_scala
 .PHONY: deploy
 
+deploy_server: remove_server
+	mkdir -p graphite
+	MY_UID="$(shell id -u)" MY_GID="$(shell id -g)" docker stack deploy -c docker-compose-server.yaml gs_scala
+.PHONY: deploy_server
 
 remove:
 	if docker stack ls | grep -q gs_scala; then \
             docker stack rm gs_scala; \
 	fi
 .PHONY: remove
+
+remove_server:
+	if docker stack ls | grep -q gs_scala; then \
+			docker stack rm gs_scala; \
+	fi
+.PHONY: remove_server
 
 manager_logs:
 	docker service logs -f gs_scala_manager

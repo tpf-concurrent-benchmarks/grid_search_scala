@@ -8,7 +8,7 @@ RUN apk --update add openjdk11-jre
 RUN rm -rf /var/cache/apk/*
 
 WORKDIR /app
-COPY ./compilation/worker/scala-3.3.1/worker.jar .
 
+COPY worker.jar .
 
 CMD ["java", "-jar", "worker.jar"]

@@ -9,6 +9,6 @@ RUN rm -rf /var/cache/apk/*
 
 WORKDIR /app
 
-COPY ./compilation/manager/scala-3.3.1/manager.jar /app
+COPY manager.jar .
 
 CMD ["java", "-jar", "manager.jar"]

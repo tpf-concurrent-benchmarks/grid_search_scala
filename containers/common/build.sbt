@@ -15,3 +15,5 @@ libraryDependencies += "com.newmotion" % "akka-rabbitmq_2.11" % "5.1.2"
 libraryDependencies += "com.timgroup" % "java-statsd-client" % "3.1.0"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.15" % Test
+
+assembly / assemblyJarName := "common.jar"
