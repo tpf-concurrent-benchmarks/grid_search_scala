@@ -4,7 +4,7 @@ import org.grid_search.common.config.FileConfigReader
 import org.grid_search.common.marshalling.{WorkParser, unParseResult}
 import org.grid_search.common.middleware
 import org.grid_search.common.stats.StatsDLogger
-import org.grid_search.common.work_split.Aggregator
+import org.grid_search.common.work_split.{Aggregator, Result, aggregateResults}
 
 def getConfigReader: FileConfigReader = {
     if (System.getenv("LOCAL") == "true") {
@@ -20,20 +20,29 @@ def getConfigReader: FileConfigReader = {
     }
 }
 
-def produceWork(workParser: WorkParser, rabbitMq: middleware.Rabbit, workQueue: String): Unit = {
-    val subWorks = workParser.work.split(workParser.maxItemsPerBatch)
+def produceWork(workParser: WorkParser, rabbitMq: middleware.Rabbit, workQueue: String): Int = {
+    val subWorks = workParser.work.split(workParser.maxItemsPerBatch, Some(5))
+    var subWorksAmount = 0
 
     for (subWork <- subWorks) {
         val parsed = WorkParser.parse(subWork)
         println("Sending work: " + parsed)
         rabbitMq.produce(workQueue, parsed.getBytes)
+        subWorksAmount += 1
     }
+    subWorksAmount
 }
 
-def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, aggregator: Aggregator): Unit = {
+def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, aggregator: Aggregator, responsesToWait: Int): Unit = {
+    var results: List[Result] = List()
+
     rabbitMq.setConsumer(resultsQueue, message => {
-        val result = unParseResult(aggregator, new String(message, "UTF-8"))
-        println("Received result: " + result)
+        val newResult = unParseResult(aggregator, new String(message, "UTF-8"))
+        results = newResult :: results
+        if (results.length == responsesToWait) {
+            val aggregatedResults = aggregateResults(results)
+            println(s"Got all results - $aggregatedResults")
+        }
         true
     })
     rabbitMq.startConsuming()
@@ -47,8 +56,7 @@ def main(): Unit = {
     val queues = config.getQueuesConfig
     val workPath = config.getWorkConfig.path
     val workParser = WorkParser.fromJsonFile(workPath)
+    val subWorksAmount = produceWork(workParser, rabbitMq, queues.work)
 
-    produceWork(workParser, rabbitMq, queues.work)
-
-    consumeResults(rabbitMq, queues.results, workParser.work.aggregator)
+    consumeResults(rabbitMq, queues.results, workParser.work.aggregator, subWorksAmount)
 }

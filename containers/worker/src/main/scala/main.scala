@@ -3,7 +3,7 @@ import org.grid_search.common.config.{FileConfigReader, QueuesConfig}
 import org.grid_search.common.work_split.{CircularIterator, Interval, Result, Work}
 import org.grid_search.common.marshalling.{WorkParser, parseResult}
 import org.grid_search.common.middleware.Rabbit
-import org.grid_search.common.stats.StatsDLogger
+import org.grid_search.common.stats.{StatsDLogger, getLogger}
 import com.typesafe.config.ConfigFactory
 
 
@@ -24,14 +24,20 @@ def getConfigReader: FileConfigReader = {
 }
 
 def receiveWork(rabbitMq: Rabbit, workQueue: String, resultsQueue: String): Unit = {
+    var resultsCount = 0
     rabbitMq.setConsumer(workQueue, workString => {
         val work = WorkParser.unParse(new String(workString, "UTF-8"))
 
         val result: Result = work.calculateFor(mainFunc)
 
         val resultString = parseResult(result)
-        println("Sending result: " + resultString)
         rabbitMq.produce(resultsQueue, resultString.getBytes("UTF-8"))
+        resultsCount += 1
+        // getLogger.increment("results_produced")
+        if (resultsCount == 1000) {
+            println("Produced 1000 results")
+            resultsCount = 0
+        }
 
         true
     })
