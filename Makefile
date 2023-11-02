@@ -8,12 +8,20 @@ compile:
 	cd ./containers/manager && sbt compile
 .PHONY: compile
 
-jar:
+jar: common_publish_local
 	docker compose -f docker-compose-compilation.yaml up --build
 	docker compose -f docker-compose-compilation.yaml down
 	cp ./compilation/manager/scala-3.3.1/manager.jar ./containers/manager/manager.jar
 	cp ./compilation/worker/scala-3.3.1/worker.jar ./containers/worker/worker.jar
 .PHONY: jar
+
+jar_local:
+	cd ./containers/manager && sbt assembly
+	cd ../..
+	cd ./containers/worker && sbt assembly
+	cp ./containers/manager/target/scala-3.3.1/manager.jar ./containers/manager/manager.jar
+	cp ./containers/worker/target/scala-3.3.1/worker.jar ./containers/worker/worker.jar
+.PHONY: jar_local
 
 build:
 	docker rmi grid_search_scala_worker -f
@@ -37,7 +45,7 @@ down_rabbitmq:
 .PHONY: down_rabbitmq
 
 run_graphite: down_graphite
-	docker compose -f docker-compose-graphite.yaml up --build -d
+	docker stack deploy -c docker-compose-graphite.yaml graphite
 .PHONY: run_graphite
 
 down_graphite:
@@ -69,7 +77,7 @@ worker_logs:
 .PHONY: worker_logs
 
 run_manager_local:
-	cd ./containers/manager && LOCAL=true sbt run
+	cd ./containers/manager && LOCAL=true sbt -J-Xmx500M run
 	cd ../..
 .PHONY: run_manager_local
 
@@ -79,7 +87,7 @@ run_manager_tests:
 .PHONY: run_manager_tests
 
 run_worker_local:
-	cd ./containers/worker && LOCAL=true sbt run
+	cd ./containers/worker && LOCAL=true sbt -J-Xmx500M run
 	cd ../..
 .PHONY: run_worker_local
 
