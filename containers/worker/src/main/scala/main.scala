@@ -28,7 +28,7 @@ def receiveWork(rabbitMq: Rabbit, workQueue: String, resultsQueue: String): Unit
     rabbitMq.setConsumer(workQueue, workString => {
         val work = WorkParser.unParse(new String(workString, "UTF-8"))
 
-        val result: Result = work.calculateFor(mainFunc)
+        val result: Result = work.calculateFor(griewankFunc)
 
         val resultString = parseResult(result)
         rabbitMq.produce(resultsQueue, resultString.getBytes("UTF-8"))
