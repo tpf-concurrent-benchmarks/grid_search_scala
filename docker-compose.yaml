@@ -7,12 +7,13 @@ services:
       - "./statsd.config.js:/opt/statsd/config.js:ro"
       - "./graphite.storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf:ro"
       - "./graphite:/opt/graphite/storage/:rw"
+    user: ${MY_UID}:${MY_GID}
     ports:
       - "8080:8080"
       - "8125:8125/udp"
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    image: gcr.io/cadvisor/cadvisor:v0.48.1
     command: >
       -storage_driver="statsd"
       -storage_driver_host="graphite:8125"
