@@ -59,6 +59,7 @@ setup: init compile build build_rabbitmq
 
 deploy: remove build down_rabbitmq down_graphite
 	mkdir -p graphite
+	mkdir -p grafana_config
 	MY_UID="$(shell id -u)" MY_GID="$(shell id -g)" docker stack deploy -c docker-compose.yaml gs_scala
 .PHONY: deploy
 
@@ -170,3 +171,11 @@ tunnel_rabbitmq:
 tunnel_graphite:
 	ssh -L 8080:127.0.0.1:8080 efoppiano@atom.famaf.unc.edu.ar
 .PHONY: tunnel_graphite
+
+tunnel_cadvisor:
+	ssh -L 8888:127.0.0.1:8888 efoppiano@atom.famaf.unc.edu.ar
+.PHONY: tunnel_cadvisor
+
+tunnel_grafana:
+	ssh -L 8081:127.0.0.1:8081 efoppiano@atom.famaf.unc.edu.ar
+.PHONY: tunnel_grafana
