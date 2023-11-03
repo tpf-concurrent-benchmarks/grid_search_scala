@@ -3,7 +3,7 @@ import com.typesafe.config.ConfigFactory
 import org.grid_search.common.config.FileConfigReader
 import org.grid_search.common.marshalling.{WorkParser, unParseResult}
 import org.grid_search.common.middleware
-import org.grid_search.common.stats.StatsDLogger
+import org.grid_search.common.stats.{StatsDLogger, getLogger}
 import org.grid_search.common.work_split.{Aggregator, Result, aggregateResults}
 
 def getConfigReader: FileConfigReader = {
@@ -35,13 +35,16 @@ def produceWork(workParser: WorkParser, rabbitMq: middleware.Rabbit, workQueue: 
 
 def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, aggregator: Aggregator, responsesToWait: Int): Unit = {
     var results: List[Result] = List()
+    val startTime = System.currentTimeMillis()
 
     rabbitMq.setConsumer(resultsQueue, message => {
         val newResult = unParseResult(aggregator, new String(message, "UTF-8"))
         results = newResult :: results
         if (results.length == responsesToWait) {
             val aggregatedResults = aggregateResults(results)
-            println(s"Got all results - $aggregatedResults")
+            val endTime = System.currentTimeMillis()
+            println(s"Got all results - $aggregatedResults - in ${endTime - startTime} ms")
+            getLogger.gauge("completion_time", endTime - startTime)
         }
         true
     })

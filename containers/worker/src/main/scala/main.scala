@@ -1,10 +1,11 @@
 package org.grid_search.worker
-import org.grid_search.common.config.{FileConfigReader, QueuesConfig}
-import org.grid_search.common.work_split.{CircularIterator, Interval, Result, Work}
+import com.typesafe.config.ConfigFactory
+import org.grid_search.common.config.FileConfigReader
 import org.grid_search.common.marshalling.{WorkParser, parseResult}
 import org.grid_search.common.middleware.Rabbit
 import org.grid_search.common.stats.{StatsDLogger, getLogger}
-import com.typesafe.config.ConfigFactory
+import org.grid_search.common.work_split.Result
+
 
 
 
@@ -33,7 +34,7 @@ def receiveWork(rabbitMq: Rabbit, workQueue: String, resultsQueue: String): Unit
         val resultString = parseResult(result)
         rabbitMq.produce(resultsQueue, resultString.getBytes("UTF-8"))
         resultsCount += 1
-        // getLogger.increment("results_produced")
+        getLogger.increment("results_produced")
         if (resultsCount == 1000) {
             println("Produced 1000 results")
             resultsCount = 0
