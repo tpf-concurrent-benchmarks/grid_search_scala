@@ -20,17 +20,20 @@ def getConfigReader: FileConfigReader = {
     }
 }
 
-def produceWork(workParser: WorkParser, rabbitMq: middleware.Rabbit, workQueue: String): Int = {
-    val subWorks = workParser.work.split(workParser.maxItemsPerBatch, Some(5))
-    var subWorksAmount = 0
+def produceWork(workParser: WorkParser, rabbitMq: middleware.Rabbit, workQueue: String): Option[Int] = {
+    try {
 
-    for (subWork <- subWorks) {
+      val subWorks = workParser.work.split(workParser.maxItemsPerBatch, Some(5))
+      var subWorksAmount = 0
+      
+      for (subWork <- subWorks) {
         val parsed = WorkParser.parse(subWork)
         println("Sending work: " + parsed)
         rabbitMq.produce(workQueue, parsed.getBytes)
         subWorksAmount += 1
-    }
-    subWorksAmount
+      }
+      Some(subWorksAmount)
+    } catch case _: Exception => None
 }
 
 def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, aggregator: Aggregator, responsesToWait: Int): Unit = {
@@ -64,5 +67,8 @@ def main(): Unit = {
     val workParser = WorkParser.fromJsonFile(workPath)
     val subWorksAmount = produceWork(workParser, rabbitMq, queues.work)
 
-    consumeResults(rabbitMq, queues.results, workParser.work.aggregator, subWorksAmount)
+    subWorksAmount match {
+      case None => rabbitMq.close()
+      case Some(amount) => consumeResults(rabbitMq, queues.results, workParser.work.aggregator, amount)
+    }
 }
