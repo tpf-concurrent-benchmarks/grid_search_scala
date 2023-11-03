@@ -7,13 +7,21 @@ services:
       - "./statsd.config.js:/opt/statsd/config.js:ro"
       - "./graphite.storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf:ro"
       - "./graphite:/opt/graphite/storage/:rw"
-    user: ${MY_UID}:${MY_GID}
     ports:
       - "8080:8080"
       - "8125:8125/udp"
 
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "8081:3000"
+    volumes:
+      - "grafana_config:/var/lib/grafana"
+    depends_on:
+      - graphite
+
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.48.1
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
     command: >
       -storage_driver="statsd"
       -storage_driver_host="graphite:8125"
@@ -27,6 +35,9 @@ services:
       - "/var/run:/var/run:rw"
       - "/sys:/sys:ro"
       - "/var/lib/docker/:/var/lib/docker:ro"
+      - "/dev/disk/:/dev/disk:ro"
+    devices:
+      - "/dev/kmsg"
 
   rabbitmq:
     image: rostov_rabbitmq
@@ -76,3 +87,7 @@ services:
     environment:
       - LOCAL=${LOCAL}
       - NODE_ID=manager
+
+volumes:
+  grafana_config:
+    driver: local

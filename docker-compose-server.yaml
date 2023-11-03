@@ -2,12 +2,11 @@ version: "3.7"
 
 services:
   graphite:
-    image: graphiteapp/graphite-statsd:1.1.10-4
+    image: graphiteapp/graphite-statsd:latest
     volumes:
       - "./statsd.config.js:/opt/statsd/config.js:ro"
       - "./graphite.storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf:ro"
       - "./graphite:/opt/graphite/storage/:rw"
-    user: ${MY_UID}:${MY_GID}
     ports:
       - "8080:8080"
 
@@ -23,9 +22,19 @@ services:
       - graphite
     volumes:
       - "/:/rootfs:ro"
-      - "/var/run:/var/run:rw"
+      - "/var/run:/var/run:ro"
       - "/sys:/sys:ro"
       - "/var/lib/docker/:/var/lib/docker:ro"
+      - "/dev/disk/:/dev/disk:ro"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "8081:3000"
+    volumes:
+      - "grafana_config:/var/lib/grafana"
+    depends_on:
+      - graphite
 
   rabbitmq:
     image: rostov_rabbitmq
@@ -40,6 +49,8 @@ services:
 
   worker:
     image: grid_search_scala_worker
+    tty: true
+    stdin_open: true
     depends_on:
       - rabbitmq
       - graphite
@@ -62,3 +73,7 @@ services:
     environment:
       - LOCAL=${LOCAL}
       - NODE_ID=manager
+
+volumes:
+  grafana_config:
+    driver: local
