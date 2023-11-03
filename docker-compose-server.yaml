@@ -1,6 +1,10 @@
 version: "3.7"
 
 services:
+  netcat:
+    image: alpine:latest
+    tty: true
+    stdin_open: true
   graphite:
     image: graphiteapp/graphite-statsd:latest
     volumes:
@@ -59,8 +63,10 @@ services:
     depends_on:
       - rabbitmq
       - graphite
+    tty: true
+    stdin_open: true
     deploy:
-      replicas: 2
+      replicas: 4
       restart_policy:
         condition: none
     environment:
