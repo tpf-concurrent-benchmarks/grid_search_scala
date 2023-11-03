@@ -11,7 +11,7 @@ services:
       - "8080:8080"
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.48.1
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
     command: >
       -storage_driver="statsd"
       -storage_driver_host="graphite:8125"
