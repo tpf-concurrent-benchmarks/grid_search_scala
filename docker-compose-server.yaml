@@ -16,7 +16,7 @@ services:
       -storage_driver="statsd"
       -storage_driver_host="graphite:8125"
       -storage_driver_db="cadvisor"
-      -storage_driver_buffer_duration="1m"
+      -storage_driver_buffer_duration="10s"
       --enable_metrics=cpu,cpuLoad,disk,diskIO,memory,network
     depends_on:
       - graphite
