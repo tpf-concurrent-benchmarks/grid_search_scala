@@ -77,7 +77,7 @@ worker_logs:
 	docker service logs -f gs_scala_worker
 .PHONY: worker_logs
 
-run_manager_local:
+run_manager_local: common_publish_local
 	cd ./containers/manager && LOCAL=true sbt -J-Xmx500M run
 	cd ../..
 .PHONY: run_manager_local
@@ -87,7 +87,7 @@ run_manager_tests:
 	cd ../..
 .PHONY: run_manager_tests
 
-run_worker_local:
+run_worker_local: common_publish_local
 	cd ./containers/worker && LOCAL=true sbt -J-Xmx500M run
 	cd ../..
 .PHONY: run_worker_local
