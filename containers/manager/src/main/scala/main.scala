@@ -56,6 +56,9 @@ def main(): Unit = {
     val config = getConfigReader
 
     val rabbitMq = middleware.Rabbit(config.getMiddlewareConfig)
+
+    rabbitMq.declareQueue(config.getQueuesConfig.work, Some(3))
+
     val queues = config.getQueuesConfig
     val workPath = config.getWorkConfig.path
     val workParser = WorkParser.fromJsonFile(workPath)

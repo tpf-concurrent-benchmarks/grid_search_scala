@@ -5,6 +5,10 @@ import com.newmotion.akka.rabbitmq
 import com.rabbitmq.client.{Channel, Connection}
 import config.MiddlewareConfig
 
+import scala.jdk.CollectionConverters._
+import scala.annotation.tailrec
+
+
 object Rabbit {
     private val maxConnectionAttempts = 10
 
@@ -43,18 +47,58 @@ object Rabbit {
 class Rabbit(connection: rabbitmq.Connection, prefetchCount: Int) extends MessageQueue {
     private val channel: rabbitmq.Channel = connection.createChannel()
     channel.basicQos(prefetchCount)
+    channel.confirmSelect()
+
     private var declaredQueues: Set[String] = Set[String]()
 
-    private def declareQueue(queue: String): Unit = {
+    def declareQueue(queue: String, maxMessages: Option[Int]=None): Unit = {
         if (!declaredQueues.contains(queue)) {
-            channel.queueDeclare(queue, false, false, false, null)
+            maxMessages match {
+                case Some(max) =>{
+                    val arguments = Map("x-max-length" -> max, "x-overflow" -> "reject-publish").asJava.asInstanceOf[java.util.Map[String, Object]]
+                    channel.queueDeclare(queue, false, false, false, arguments)
+                }
+                case None =>
+                    channel.queueDeclare(queue, false, false, false, null)
+            }
             declaredQueues += queue
         }
     }
-
+    
     override def produce(queue: String, message: Array[Byte]): Unit = {
+        _produce(queue, message)
+    }
+
+    private def _produce(queue: String, message: Array[Byte], resendWaitTimeMS:Long = 1000, retries:Int=5): Unit = {
         declareQueue(queue)
-        channel.basicPublish("", queue, null, message)
+        
+        Range.inclusive(1, retries).takeWhile(attempt => {
+            channel.basicPublish("", queue, null, message)
+
+            if (channel.waitForConfirms()) {
+                false // success
+            } else {
+                // if (attempt == retries) throw new Exception("Failed to publish message to RabbitMQ")
+                Thread.sleep(resendWaitTimeMS)
+                true // retry
+            }
+        })   
+    }
+
+    def produceOrDie(queue: String, message: Array[Byte], resendWaitTimeMS:Long = 1000, retries:Int=5): Unit = {
+        declareQueue(queue)
+        
+        Range.inclusive(1, retries).takeWhile(attempt => {
+            channel.basicPublish("", queue, null, message)
+
+            if (channel.waitForConfirms()) {
+                false // success
+            } else {
+                if (attempt == retries) throw new Exception("Failed to publish message to RabbitMQ")
+                Thread.sleep(resendWaitTimeMS)
+                true // retry
+            }
+        })   
     }
 
     override def setConsumer(queue: String, callback: Callback): Unit = {
