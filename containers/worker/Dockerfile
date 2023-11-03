@@ -11,4 +11,4 @@ WORKDIR /app
 
 COPY worker.jar .
 
-CMD ["java", "-Xmx500m", "-jar", "worker.jar"]
+CMD ["java", "-Xmx500m", "-jar", "-XX:ParallelGCThreads=1", "worker.jar"]
