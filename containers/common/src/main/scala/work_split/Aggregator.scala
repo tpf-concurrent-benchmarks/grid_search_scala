@@ -9,11 +9,11 @@ enum Aggregator {
 }
 
 def aggregate( aggregator: Aggregator, values: Iterator[ (Params, Double) ] ): Result = {
-    getLogger.runAndMeasure("work_time", aggregator match {
+    aggregator match {
         case Aggregator.Mean => aggregateMean(values)
         case Aggregator.Max => aggregateMax(values)
         case Aggregator.Min => aggregateMin(values)
-    })
+    }
 }
 
 def aggregateMean( values: Iterator[ (Params, Double) ] ): MeanResult = {
