@@ -5,6 +5,8 @@ import org.grid_search.common.marshalling.{WorkParser, unParseResult}
 import org.grid_search.common.middleware
 import org.grid_search.common.stats.{StatsDLogger, getLogger}
 import org.grid_search.common.work_split.{Aggregator, Result, aggregateResults}
+import scala.concurrent.{Promise, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 def getConfigReader: FileConfigReader = {
     if (System.getenv("LOCAL") == "true") {
@@ -39,6 +41,7 @@ def produceWork(workParser: WorkParser, rabbitMq: middleware.Rabbit, workQueue: 
 def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, aggregator: Aggregator, responsesToWait: Int): Unit = {
     var results: List[Result] = List()
     val startTime = System.currentTimeMillis()
+    val allResultsReceived = Promise[Unit]()
 
     rabbitMq.setConsumer(resultsQueue, message => {
         val newResult = unParseResult(aggregator, new String(message, "UTF-8"))
@@ -48,10 +51,11 @@ def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, aggregator
             val endTime = System.currentTimeMillis()
             println(s"Got all results - $aggregatedResults - in ${endTime - startTime} ms")
             getLogger.gauge("completion_time", endTime - startTime)
+            allResultsReceived.success(())
         }
         true
     })
-    rabbitMq.startConsuming()
+    rabbitMq.startConsuming(Some(allResultsReceived.future))
 }
 
 @main
