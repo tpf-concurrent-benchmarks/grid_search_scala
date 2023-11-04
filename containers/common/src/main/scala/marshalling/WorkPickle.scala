@@ -15,7 +15,7 @@ implicit val intervalRW: ReadWriter[Interval] =
     }
   )
 
-implicit val workRW: ReadWriter[Work] =
+val workRW: ReadWriter[Work] =
   readwriter [(Array[Interval], Int)].bimap[Work](
     work => (work.intervals.toArray, work.aggregator.ordinal),
     tuple => Work(tuple._1.toList, Aggregator.fromOrdinal(tuple._2))

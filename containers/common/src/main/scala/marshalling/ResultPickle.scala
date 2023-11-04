@@ -1,10 +1,11 @@
 package org.grid_search.common
 package marshalling
 
-import work_split.{Params, Result, MeanResult, MinResult, MaxResult, Aggregator}
+import work_split.{Aggregator, MaxResult, MeanResult, MinResult, Params, Result}
 
-import upickle.default.{ReadWriter, readwriter}
-import scala.compiletime.ops.string
+import upickle.default
+import upickle.default.{ReadWriter, readwriter, writer}
+
 
 implicit val MeanResultRW: ReadWriter[MeanResult] =
   readwriter [(Double, Int)].bimap[MeanResult](
@@ -24,11 +25,11 @@ implicit val MaxResultRW: ReadWriter[MaxResult] =
     (tuple: (Double, Params)) => MaxResult(tuple._1, tuple._2)
   )
 
-def parseResult(result: Result): String = {
+def parseResult(result: Result): ujson.Value = {
   result match {
-    case meanResult: MeanResult => upickle.default.write(meanResult)
-    case minResult: MinResult => upickle.default.write(minResult)
-    case maxResult: MaxResult => upickle.default.write(maxResult)
+    case meanResult: MeanResult => upickle.default.writeJs(meanResult)
+    case minResult: MinResult => upickle.default.writeJs(minResult)
+    case maxResult: MaxResult => upickle.default.writeJs(maxResult)
   }
 }
 
@@ -40,7 +41,7 @@ def unParseResult(aggregator:Aggregator, data: String): Result = {
   }
 }
 
-
-
-
-
+val resultW: default.Writer[Result] =
+  default.writer[ujson.Value].comap[Result](
+    (result: Result) => parseResult(result)
+  )

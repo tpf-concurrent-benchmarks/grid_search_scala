@@ -1,10 +1,11 @@
 package org.grid_search.worker
 
 import org.grid_search.common.config.QueuesConfig
-import org.grid_search.common.marshalling.{WorkParser, parseResult}
+import org.grid_search.common.marshalling.{parseResult, resultW, workRW}
 import org.grid_search.common.stats.getLogger
 import org.grid_search.common.transformer.BasicTransformer
-import org.grid_search.common.work_split.Result
+import org.grid_search.common.work_split.{Result, Work}
+import upickle.default
 
 object Worker {
     def apply(queuesConfig: QueuesConfig): Worker = {
@@ -13,13 +14,15 @@ object Worker {
 }
 
 case class Worker(inputQueue: String, outputQueue: String, endEvent: String) extends BasicTransformer {
+    override type InputType = Work
+    override type OutputType = Result
+    override implicit val reader: default.ReadWriter[Work] = workRW
+    override implicit val writer: default.Writer[Result] = resultW
+
     private var resultsCount = 0
 
-    override def transform(input: Array[Byte]): Array[Byte] = {
-        val work = WorkParser.unParse(new String(input, "UTF-8"))
-
-        val result: Result = getLogger.runAndMeasure("work_time", work.calculateFor(griewankFunc))
-        val resultString = parseResult(result)
+    override def transform(input: Work): Result = {
+        val result: Result = getLogger.runAndMeasure("work_time", input.calculateFor(griewankFunc))
 
         resultsCount += 1
         getLogger.increment("results_produced")
@@ -27,6 +30,6 @@ case class Worker(inputQueue: String, outputQueue: String, endEvent: String) ext
             println("Produced 1000 results")
             resultsCount = 0
         }
-        resultString.getBytes("UTF-8")
+        result
     }
 }

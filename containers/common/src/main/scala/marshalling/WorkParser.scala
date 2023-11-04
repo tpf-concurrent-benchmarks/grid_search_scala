@@ -4,6 +4,8 @@ package marshalling
 import work_split.Aggregator
 import work_split.{Interval, Work}
 
+import upickle.default
+
 object WorkParser {
     def fromJsonFile(jsonPath: String): WorkParser = {
         // open file from path, from resources
@@ -28,9 +30,13 @@ object WorkParser {
         WorkParser(work, maxItemsPerBatch)
     }
 
-    def parse(work: Work): String = upickle.default.write(work)
+    def parse(work: Work)(implicit writer: default.Writer[Work]): String = upickle.default.write(work)
 
-    def unParse(work: String): Work = upickle.default.read[Work](work)
+    def parseBytes(work: Work)(implicit writer: default.Writer[Work]): Array[Byte] = upickle.default.writeBinary(work)
+
+    def unParse(work: String)(implicit reader: default.Reader[Work]): Work = upickle.default.read[Work](work)
+
+    def unParseBytes(work: Array[Byte])(implicit reader: default.Reader[Work]): Work = upickle.default.readBinary[Work](work)
 }
 
 case class WorkParser(work: Work, maxItemsPerBatch: Int)
