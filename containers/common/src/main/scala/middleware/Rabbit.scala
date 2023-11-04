@@ -50,6 +50,8 @@ class Rabbit(connection: rabbitmq.Connection, prefetchCount: Int) extends Messag
     channel.confirmSelect()
 
     private var declaredQueues: Set[String] = Set[String]()
+    private var declaredExchanges: Set[String] = Set[String]()
+    private var selfQueue: Option[String] = None
 
     def declareQueue(queue: String, maxMessages: Option[Int]=None): Unit = {
         if (!declaredQueues.contains(queue)) {
@@ -120,12 +122,29 @@ class Rabbit(connection: rabbitmq.Connection, prefetchCount: Int) extends Messag
         channel.basicConsume(queue, false, consumer)
     }
 
+    def declareExchange(exchange: String, exchangeType: String): Unit = {
+        if (!declaredExchanges.contains(exchange)) {
+            channel.exchangeDeclare(exchange, exchangeType)
+            declaredExchanges += exchange
+        }
+    }
+
     override def publish(eventName: String, message: String): Unit = {
-        throw new NotImplementedError()
+        declareExchange(eventName, "fanout")
+        channel.basicPublish(eventName, "", null, message.getBytes("UTF-8"))
     }
 
     override def subscribe(eventName: String, callback: Callback): Unit = {
-        throw new NotImplementedError()
+
+        declareExchange(eventName, "fanout")
+        if (selfQueue.isEmpty) {
+            selfQueue = Some(channel.queueDeclare().getQueue)
+            declaredQueues += selfQueue.get
+        }
+
+        channel.queueBind(selfQueue.get, eventName, "")
+
+        setConsumer(selfQueue.get, callback)
     }
 
     override def close(): Unit = {

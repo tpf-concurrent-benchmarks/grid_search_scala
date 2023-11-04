@@ -32,9 +32,7 @@ trait MessageQueue {
             }
             Await.result(future, scala.concurrent.duration.Duration.Inf)
         } catch {
-            case _: InterruptedException =>
-                println("Shutting down...")
-                close()
+            case _: InterruptedException => println("Interrupted")
         }
     }
 }
