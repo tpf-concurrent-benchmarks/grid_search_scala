@@ -15,7 +15,7 @@ trait MessageQueue {
     def setConsumer(queue: String, callback: Callback): Unit
 
     // @throws(classOf[IOException])
-    def publish(eventName: String, message: String): Unit
+    def publish(eventName: String, message: Array[Byte]): Unit
 
     // @throws(classOf[IOException])
     def subscribe(eventName: String, callback: Callback): Unit

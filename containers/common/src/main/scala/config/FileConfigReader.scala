@@ -39,12 +39,12 @@ case class FileConfigReader(config: Config) extends ConfigReader {
     override def getQueuesConfig: QueuesConfig = {
         val workQueue = config.getString("middleware.queues.work")
         val resultsQueue = config.getString("middleware.queues.results")
-        val maxWorkMessages = config.getInt("middleware.queues.maxWorkMessages")
+        val endEvent = config.getString("middleware.endEvent")
 
         QueuesConfig(
             workQueue,
             resultsQueue,
-            maxWorkMessages)
+            endEvent)
     }
 
     override def getMetricsConfig: MetricsConfig = {

@@ -95,8 +95,8 @@ class Rabbit(connection: rabbitmq.Connection, prefetchCount: Int) extends Messag
         channel.basicConsume(queue, false, consumer)
     }
 
-    override def publish(eventName: String, message: String): Unit = {
-        channel.basicPublish(eventName, "", null, message.getBytes("UTF-8"))
+    override def publish(eventName: String, message: Array[Byte]): Unit = {
+        channel.basicPublish(eventName, "", null, message)
     }
 
     override def subscribe(eventName: String, callback: Callback): Unit = {

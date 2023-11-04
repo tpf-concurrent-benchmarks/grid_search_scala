@@ -37,7 +37,7 @@ def produceWork(workParser: WorkParser, rabbitMq: middleware.Rabbit, workQueue: 
     } catch case _: Exception => None
 }
 
-def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, aggregator: Aggregator, responsesToWait: Int): Unit = {
+def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, endEvent: String, aggregator: Aggregator, responsesToWait: Int): Unit = {
     var results: List[Result] = List()
     val startTime = System.currentTimeMillis()
     val allResultsReceived = Promise[Unit]()
@@ -57,7 +57,7 @@ def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, aggregator
 
     rabbitMq.startConsuming(Some(allResultsReceived.future))
 
-    rabbitMq.publish("end", "end")
+    rabbitMq.publish(endEvent, "end".getBytes("UTF-8"))
     rabbitMq.close()
 }
 
@@ -75,6 +75,6 @@ def main(): Unit = {
 
     subWorksAmount match {
       case None => rabbitMq.close()
-      case Some(amount) => consumeResults(rabbitMq, queues.results, workParser.work.aggregator, amount)
+      case Some(amount) => consumeResults(rabbitMq, queues.results, queues.endEvent, workParser.work.aggregator, amount)
     }
 }
