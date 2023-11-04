@@ -5,6 +5,7 @@ import org.grid_search.common.marshalling.{WorkParser, parseResult}
 import org.grid_search.common.middleware.Rabbit
 import org.grid_search.common.stats.{StatsDLogger, getLogger}
 import org.grid_search.common.work_split.Result
+import scala.concurrent.Promise
 
 
 
@@ -42,7 +43,18 @@ def receiveWork(rabbitMq: Rabbit, workQueue: String, resultsQueue: String): Unit
 
         true
     })
-    rabbitMq.startConsuming()
+
+    val stopConsuming: Promise[Unit] = Promise()
+
+    rabbitMq.subscribe("end", endString => {
+        val end = new String(endString, "UTF-8")
+        println(s"Received end: $end")
+        stopConsuming.success(())
+        true
+    })
+
+    rabbitMq.startConsuming(Some(stopConsuming.future))
+    rabbitMq.close()
 }
 
 @main

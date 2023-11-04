@@ -55,7 +55,11 @@ def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, aggregator
         }
         true
     })
+
     rabbitMq.startConsuming(Some(allResultsReceived.future))
+
+    rabbitMq.publish("end", "end")
+    rabbitMq.close()
 }
 
 @main
