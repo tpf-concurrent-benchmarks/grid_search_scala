@@ -5,10 +5,6 @@ import com.newmotion.akka.rabbitmq
 import com.rabbitmq.client.{Channel, Connection}
 import config.MiddlewareConfig
 
-import scala.jdk.CollectionConverters._
-import scala.annotation.tailrec
-
-
 object Rabbit {
     private val maxConnectionAttempts = 10
 
@@ -49,30 +45,11 @@ class Rabbit(connection: rabbitmq.Connection, prefetchCount: Int) extends Messag
     channel.basicQos(prefetchCount)
     channel.confirmSelect()
 
-    private var declaredQueues: Set[String] = Set[String]()
-    private var declaredExchanges: Set[String] = Set[String]()
-    private var selfQueue: Option[String] = None
-
-    def declareQueue(queue: String, maxMessages: Option[Int]=None): Unit = {
-        if (!declaredQueues.contains(queue)) {
-            maxMessages match {
-                case Some(max) =>{
-                    val arguments = Map("x-max-length" -> max, "x-overflow" -> "reject-publish").asJava.asInstanceOf[java.util.Map[String, Object]]
-                    channel.queueDeclare(queue, false, false, false, arguments)
-                }
-                case None => channel.queueDeclare(queue, false, false, false, null)
-            }
-            declaredQueues += queue
-        }
-    }
-    
     override def produce(queue: String, message: Array[Byte]): Unit = {
         _produce(queue, message)
     }
 
     private def _produce(queue: String, message: Array[Byte], resendWaitTimeMS:Long = 1000, retries:Int=5): Unit = {
-        declareQueue(queue)
-        
         Range.inclusive(1, retries).takeWhile(attempt => {
             channel.basicPublish("", queue, null, message)
 
@@ -87,8 +64,6 @@ class Rabbit(connection: rabbitmq.Connection, prefetchCount: Int) extends Messag
     }
 
     def produceOrDie(queue: String, message: Array[Byte], resendWaitTimeMS:Long = 1000, retries:Int=5): Unit = {
-        declareQueue(queue)
-        
         Range.inclusive(1, retries).takeWhile(attempt => {
             channel.basicPublish("", queue, null, message)
 
@@ -103,8 +78,6 @@ class Rabbit(connection: rabbitmq.Connection, prefetchCount: Int) extends Messag
     }
 
     override def setConsumer(queue: String, callback: Callback): Unit = {
-        declareQueue(queue)
-
         val consumer = new rabbitmq.DefaultConsumer(channel) {
             override def handleDelivery(
                                            consumerTag: String,
@@ -122,29 +95,16 @@ class Rabbit(connection: rabbitmq.Connection, prefetchCount: Int) extends Messag
         channel.basicConsume(queue, false, consumer)
     }
 
-    def declareExchange(exchange: String, exchangeType: String): Unit = {
-        if (!declaredExchanges.contains(exchange)) {
-            channel.exchangeDeclare(exchange, exchangeType)
-            declaredExchanges += exchange
-        }
-    }
-
     override def publish(eventName: String, message: String): Unit = {
-        declareExchange(eventName, "fanout")
         channel.basicPublish(eventName, "", null, message.getBytes("UTF-8"))
     }
 
     override def subscribe(eventName: String, callback: Callback): Unit = {
+        val queueName = channel.queueDeclare().getQueue
 
-        declareExchange(eventName, "fanout")
-        if (selfQueue.isEmpty) {
-            selfQueue = Some(channel.queueDeclare().getQueue)
-            declaredQueues += selfQueue.get
-        }
+        channel.queueBind(queueName, eventName, "")
 
-        channel.queueBind(selfQueue.get, eventName, "")
-
-        setConsumer(selfQueue.get, callback)
+        setConsumer(queueName, callback)
     }
 
     override def close(): Unit = {

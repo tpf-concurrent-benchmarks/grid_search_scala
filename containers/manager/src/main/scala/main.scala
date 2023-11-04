@@ -5,8 +5,7 @@ import org.grid_search.common.marshalling.{WorkParser, unParseResult}
 import org.grid_search.common.middleware
 import org.grid_search.common.stats.{StatsDLogger, getLogger}
 import org.grid_search.common.work_split.{Aggregator, Result, aggregateResults}
-import scala.concurrent.{Promise, Future}
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Promise
 
 def getConfigReader: FileConfigReader = {
     if (System.getenv("LOCAL") == "true") {
@@ -69,7 +68,6 @@ def main(): Unit = {
     val rabbitMq = middleware.Rabbit(config.getMiddlewareConfig)
 
     val queues = config.getQueuesConfig
-    rabbitMq.declareQueue(queues.work, Some(queues.maxWorkMessages))
 
     val workPath = config.getWorkConfig.path
     val workParser = WorkParser.fromJsonFile(workPath)
