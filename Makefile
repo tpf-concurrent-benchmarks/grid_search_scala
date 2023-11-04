@@ -19,6 +19,7 @@ jar_local:
 	cd ./containers/manager && sbt assembly
 	cd ../..
 	cd ./containers/worker && sbt assembly
+	cd ../..
 	cp ./containers/manager/target/scala-3.3.1/manager.jar ./containers/manager/manager.jar
 	cp ./containers/worker/target/scala-3.3.1/worker.jar ./containers/worker/worker.jar
 .PHONY: jar_local
