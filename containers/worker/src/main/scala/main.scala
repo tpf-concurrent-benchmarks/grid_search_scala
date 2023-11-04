@@ -51,6 +51,8 @@ def main(): Unit = {
 
     val rabbitMq = Rabbit(config.getMiddlewareConfig)
     val queues = config.getQueuesConfig
+
+    rabbitMq.declareQueue(queues.work, Some(queues.maxWorkMessages))
     
     receiveWork(rabbitMq, queues.work, queues.results)
 }

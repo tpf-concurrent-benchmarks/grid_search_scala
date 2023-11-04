@@ -58,7 +58,7 @@ class Rabbit(connection: rabbitmq.Connection, prefetchCount: Int) extends Messag
                     val arguments = Map("x-max-length" -> max, "x-overflow" -> "reject-publish").asJava.asInstanceOf[java.util.Map[String, Object]]
                     channel.queueDeclare(queue, false, false, false, arguments)
                 }
-                case None => channel.queueDeclarePassive(queue)
+                case None => channel.queueDeclare(queue, false, false, false, null)
             }
             declaredQueues += queue
         }

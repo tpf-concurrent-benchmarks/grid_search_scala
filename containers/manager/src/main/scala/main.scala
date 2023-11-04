@@ -64,10 +64,9 @@ def main(): Unit = {
 
     val rabbitMq = middleware.Rabbit(config.getMiddlewareConfig)
 
-    val maxMessages = 100
-    rabbitMq.declareQueue(config.getQueuesConfig.work, Some(maxMessages))
-
     val queues = config.getQueuesConfig
+    rabbitMq.declareQueue(queues.work, Some(queues.maxWorkMessages))
+
     val workPath = config.getWorkConfig.path
     val workParser = WorkParser.fromJsonFile(workPath)
     val subWorksAmount = produceWork(workParser, rabbitMq, queues.work)
