@@ -23,4 +23,4 @@ The system was run on the designated server, using the [Griewank function](https
 | Work-time Variation | 0.9%                | 1%                  | 3%                  |
 | Memory Usage        | 380 MB/Worker       | 370 MB/Worker       | 365 MB/Worker       |
 | CPU Usage           | 99.9%/Worker (?)    | 99.9%/Worker (?)    | 99.9%/Worker (?)    |
-| Completion Time     | 90 Minutes (?)      | 60 Minutes (?)      | 25 Minutes          |
+| Completion Time     | 100 Minutes (?)     | 50 Minutes          | 25 Minutes          |
