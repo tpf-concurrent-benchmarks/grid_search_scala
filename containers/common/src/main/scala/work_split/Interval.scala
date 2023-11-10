@@ -20,7 +20,7 @@ case class Interval(start: Double, end: Double, step: Double, precision: Option[
         IntervalIterator(start, end, step, precision).iterator
     }
 
-    def splitEvenly(amountOfSubIntervals: Int, precision: Option[Int] = None): Iterator[Interval] = {
+    private def splitEvenly(amountOfSubIntervals: Int, precision: Option[Int] = None): Iterator[Interval] = {
         val ret = Range.inclusive(0, amountOfSubIntervals - 1).map(pos => {
             val subStart = roundNumber(start + pos * Math.floor(size / amountOfSubIntervals) * step, precision)
             val subEnd = roundNumber(start + (pos + 1) * Math.floor(size / amountOfSubIntervals) * step, precision)

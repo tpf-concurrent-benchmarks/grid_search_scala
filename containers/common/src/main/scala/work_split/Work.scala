@@ -11,7 +11,6 @@ object Work {
 
 case class Work(intervals: List[Interval], aggregator: Aggregator) {
     val size: BigInt = calcSize()
-    var current: List[Double] = intervals.map(i => i.start)
 
     private def calcSize(): BigInt = {
         intervals.map(i => BigInt(i.size)).product
@@ -22,7 +21,7 @@ case class Work(intervals: List[Interval], aggregator: Aggregator) {
     }
 
     private def calcAmountOfMissingPartitions(minBatches: Int, partitionsPerInterval: List[Int]): Int = {
-        math.ceil(minBatches / partitionsPerInterval.product).toInt
+        math.ceil(minBatches.toDouble / partitionsPerInterval.product).toInt
     }
 
     private def calcPartitionsPerInterval(minBatches: Int): List[Int] = {
@@ -44,7 +43,7 @@ case class Work(intervals: List[Interval], aggregator: Aggregator) {
     }
 
     def split(maxChunkSize: Int, precision: Option[Int] = None): Iterator[Work] = {
-        val minBatches = Math.floor(size.toDouble / maxChunkSize) + 1
+        val minBatches = Math.ceil(size.toDouble / maxChunkSize)
         val partitionsPerInterval = calcPartitionsPerInterval(minBatches.toInt)
 
 
