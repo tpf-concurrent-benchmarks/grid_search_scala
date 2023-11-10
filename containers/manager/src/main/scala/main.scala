@@ -41,7 +41,6 @@ def produceWork(workParser: WorkParser, rabbitMq: middleware.Rabbit, workQueue: 
 
 def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, endEvent: String, aggregator: Aggregator, responsesToWait: Int): Unit = {
     var results: List[Result] = List()
-    val startTime = System.currentTimeMillis()
     val allResultsReceived = Promise[Unit]()
     println(s"Waiting for $responsesToWait results")
 
@@ -51,9 +50,7 @@ def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, endEvent: 
         results = newResult :: results
         if (results.length == responsesToWait) {
             val aggregatedResults = aggregateResults(results)
-            val endTime = System.currentTimeMillis()
-            println(s"Got all results - $aggregatedResults - in ${endTime - startTime} ms")
-            getLogger.gauge("completion_time", endTime - startTime)
+            println(s"Got all results ($responsesToWait)")
             allResultsReceived.success(())
         }
         true
@@ -75,10 +72,15 @@ def main(): Unit = {
 
     val workPath = config.getWorkConfig.path
     val workParser = WorkParser.fromJsonFile(workPath)
+
+    val startTime = System.currentTimeMillis()
     val subWorksAmount = produceWork(workParser, rabbitMq, queues.work)
 
     subWorksAmount match {
       case None => rabbitMq.close()
       case Some(amount) => consumeResults(rabbitMq, queues.results, queues.endEvent, workParser.work.aggregator, amount)
     }
+    val endTime = System.currentTimeMillis()
+    println(s"Total time: ${endTime - startTime} ms")
+    getLogger.gauge("completion_time", endTime - startTime)
 }
