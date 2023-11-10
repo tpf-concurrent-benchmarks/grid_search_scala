@@ -2,8 +2,8 @@
 
 #### Average Summary
 
-- Worker Throughput: 7.00 Results/Minute
-- Combined Throughput: 112 Results/Minute
+- Worker Throughput: 0.70 Results/Second
+- Combined Throughput: 11.2 Results/Second
 - Work-time Variation: 3%
 - Memory Usage: 365 MB/Worker
 - CPU Usage: 99.9%/Worker (?)

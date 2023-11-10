@@ -2,14 +2,14 @@
 
 ## Measurements
 
-| Measurement         | 4 Nodes             | 8 Nodes             | 16 Nodes            |
-| ------------------- | ------------------- | ------------------- | ------------------- |
-| Worker Throughput   | 7.3 Results/Minute  | 7.25 Results/Minute | 7.00 Results/Minute |
-| Combined Throughput | 29.2 Results/Minute | 58.0 Results/Minute | 112 Results/Minute  |
-| Work-time Variation | 0.9%                | 1%                  | 3%                  |
-| Memory Usage        | 380 MB/Worker       | 370 MB/Worker       | 365 MB/Worker       |
-| CPU Usage           | 99.9%/Worker (?)    | 99.9%/Worker (?)    | 99.9%/Worker (?)    |
-| Completion Time     | 100 Minutes         | 50 Minutes          | 25 Minutes          |
+| Measurement         | 4 Nodes             | 8 Nodes              | 16 Nodes             |
+| ------------------- | ------------------- | -------------------- | -------------------- |
+| Worker Throughput   | 0.73 Results/Second | 0.725 Results/Second | 0.700 Results/Second |
+| Combined Throughput | 2.92 Results/Second | 5.80 Results/Second  | 11.2 Results/Second  |
+| Work-time Variation | 0.9%                | 1%                   | 3%                   |
+| Memory Usage        | 380 MB/Worker       | 370 MB/Worker        | 365 MB/Worker        |
+| CPU Usage           | 99.9%/Worker        | 99.9%/Worker         | 99.9%/Worker         |
+| Completion Time     | 100 Minutes         | 50 Minutes           | 25 Minutes           |
 
 Average measurements using the [specified configuration](measurements/README.md)
 
