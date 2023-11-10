@@ -55,7 +55,7 @@ down_graphite:
 	fi
 .PHONY: down_graphite
 
-setup: init compile build build_rabbitmq
+setup: init common_publish_local compile build build_rabbitmq
 .PHONY: setup
 
 deploy: remove build down_rabbitmq down_graphite
