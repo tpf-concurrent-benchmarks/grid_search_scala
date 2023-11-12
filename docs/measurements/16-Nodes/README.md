@@ -2,12 +2,12 @@
 
 #### Average Summary
 
-- Worker Throughput: 0.70 Results/Second
-- Combined Throughput: 11.2 Results/Second
-- Work-time Variation: 3%
+- Worker Throughput: 0.94 Results/Second
+- Combined Throughput: 15.1 Results/Second
+- Work-time Variation: 1.3%
 - Memory Usage: 365 MB/Worker
-- CPU Usage: 99.9%/Worker (?)
-- Completion Time: 25 Minutes
+- CPU Usage: 99.9/Worker
+- Completion Time: 26.6 Minutes
 
 #### [Measurements](https://snapshots.raintank.io/dashboard/snapshot/F2kd3cimbmDzuRjOW5yp4DyfjaSQ8CcR?orgId=2)
 
