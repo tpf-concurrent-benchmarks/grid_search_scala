@@ -355,14 +355,10 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
-          "unit": "short"
+          "unit": "ms"
         },
         "overrides": []
       },
@@ -1039,7 +1035,7 @@
   },
   "timezone": "",
   "title": "Gird Search Dashboard",
-  "uid": "c9a2e4b1-ffa5-4f4b-b8e6-a19ee69c5f90",
-  "version": 29,
+  "uid": "grid_search_dashboard",
+  "version": 2,
   "weekStart": ""
 }
