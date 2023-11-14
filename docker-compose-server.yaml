@@ -1,14 +1,11 @@
 version: "3.7"
 
 services:
-  netcat:
-    image: alpine:latest
-    tty: true
-    stdin_open: true
   graphite:
     image: graphiteapp/graphite-statsd:latest
     volumes:
-      - "./statsd.config.js:/opt/statsd/config.js:ro"
+      - "./statsd.config.js:/opt/statsd/config/udp.js:ro"
+      - "./statsd.config.js:/opt/statsd/config/tcp.js:ro"
       - "./graphite.storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf:ro"
       - "./graphite:/opt/graphite/storage/:rw"
     ports:
