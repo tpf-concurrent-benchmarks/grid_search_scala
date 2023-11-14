@@ -61,7 +61,7 @@ setup: init common_publish_local compile build build_rabbitmq
 deploy: remove build down_rabbitmq down_graphite
 	mkdir -p graphite
 	mkdir -p grafana_config
-	MY_UID="$(shell id -u)" MY_GID="$(shell id -g)" docker stack deploy -c docker-compose.yaml gs_scala
+	docker stack deploy -c docker-compose.yaml gs_scala
 .PHONY: deploy
 
 remove:
@@ -127,7 +127,7 @@ build_remote: upload_jars
 
 _deploy_remote:
 	mkdir -p graphite
-	MY_UID="$(shell id -u)" MY_GID="$(shell id -g)" docker stack deploy -c docker-compose-server.yaml gs_scala
+	docker stack deploy -c docker-compose-server.yaml gs_scala
 .PHONY: _deploy_remote
 
 deploy_remote: remove_remote build_remote
@@ -154,7 +154,7 @@ build_server:
 
 deploy_server: remove_server build_server
 	mkdir -p graphite
-	MY_UID="$(shell id -u)" MY_GID="$(shell id -g)" docker stack deploy -c docker-compose-server.yaml gs_scala
+	docker stack deploy -c docker-compose-server.yaml gs_scala
 .PHONY: deploy_server
 
 remove_server:
