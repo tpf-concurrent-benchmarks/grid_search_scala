@@ -38,3 +38,4 @@ compilation/manager/
 compilation/worker/
 compilation/common/
 *.jar
+.make/
