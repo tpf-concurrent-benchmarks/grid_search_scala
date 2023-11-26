@@ -3,6 +3,7 @@ import com.typesafe.config.ConfigFactory
 import org.grid_search.common.config.FileConfigReader
 import org.grid_search.common.marshalling.{WorkParser, unParseResult}
 import org.grid_search.common.middleware
+import org.grid_search.common.middleware.MessageQueue
 import org.grid_search.common.stats.{StatsDLogger, getLogger}
 import org.grid_search.common.work_split.{Aggregator, Result, Work, aggregateResults}
 
@@ -23,7 +24,7 @@ def getConfigReader: FileConfigReader = {
     }
 }
 
-def produceWork(workParser: WorkParser, rabbitMq: middleware.Rabbit, workQueue: String): Option[Int] = {
+def produceWork(workParser: WorkParser, middleware: MessageQueue, workQueue: String): Option[Int] = {
     try {
         val subWorks = workParser.work.split(workParser.maxItemsPerBatch, Some(5))
         var subWorksAmount = 0
@@ -32,19 +33,19 @@ def produceWork(workParser: WorkParser, rabbitMq: middleware.Rabbit, workQueue: 
         for (subWork <- subWorks) {
             val parsed = WorkParser.parse(subWork)
             println("Sending work: " + parsed)
-            rabbitMq.produce(workQueue, parsed.getBytes)
+            middleware.produce(workQueue, parsed.getBytes)
             subWorksAmount += 1
         }
         Some(subWorksAmount)
     } catch case _: Exception => None
 }
 
-def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, endEvent: String, aggregator: Aggregator, responsesToWait: Int): Unit = {
+def consumeResults(middleware: MessageQueue, resultsQueue: String, endEvent: String, aggregator: Aggregator, responsesToWait: Int): Unit = {
     var results: List[Result] = List()
     val allResultsReceived = Promise[Unit]()
     println(s"Waiting for $responsesToWait results")
 
-    rabbitMq.setConsumer(resultsQueue, message => {
+    middleware.setConsumer(resultsQueue, message => {
         val messageStr = new String(message, "UTF-8")
         val newResult = unParseResult(aggregator, messageStr)
         results = newResult :: results
@@ -56,10 +57,10 @@ def consumeResults(rabbitMq: middleware.Rabbit, resultsQueue: String, endEvent: 
         true
     })
 
-    rabbitMq.startConsuming(Some(allResultsReceived.future))
+    middleware.startConsuming(Some(allResultsReceived.future))
 
-    rabbitMq.publish(endEvent, "end".getBytes("UTF-8"))
-    rabbitMq.close()
+    middleware.publish(endEvent, "end".getBytes("UTF-8"))
+    middleware.close()
 }
 
 @main
