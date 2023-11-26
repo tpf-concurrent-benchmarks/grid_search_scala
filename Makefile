@@ -1,11 +1,15 @@
 WORKER_REPLICAS = 4
+REMOTE_WORK_DIR = gs_scala/grid_search_scala
+CONTAINERS_FILES = $(shell find containers -type f -not -path "*/target/*")
+SERVER_USER = efoppiano
+SERVER_HOST = atom.famaf.unc.edu.ar
 
 init:
 	mkdir -p .make
 	docker swarm init || true
 .PHONY: init
 
-.make/jar_native: $(shell find containers -type f -not -path "*/target/*")
+.make/jar_native: $(CONTAINERS_FILES)
 	cd ./containers/manager && sbt assembly
 	cd ../..
 	cd ./containers/worker && sbt assembly
@@ -14,7 +18,7 @@ init:
 	cp ./containers/worker/target/scala-3.3.1/worker.jar ./containers/worker/worker.jar
 	touch .make/jar_native
 
-.make/jar_dockerized: $(shell find containers -type f -not -path "*/target/*")
+.make/jar_dockerized: $(CONTAINERS_FILES)
 	docker compose -f docker/compilation.yaml up --build
 	docker compose -f docker/compilation.yaml down
 	cp ./compilation/manager/scala-3.3.1/manager.jar ./containers/manager/manager.jar
@@ -28,9 +32,9 @@ jar: common_publish_local
 		make .make/jar_dockerized; \
 	fi
 
-.make/build: $(shell find containers -type f -not -path "*/target/*")
-	docker rmi grid_search_scala_worker -f
-	docker rmi grid_search_scala_manager -f
+.make/build: $(CONTAINERS_FILES)
+	docker rmi grid_search_scala_worker -f || true
+	docker rmi grid_search_scala_manager -f || true
 	docker build -t grid_search_scala_worker -f ./containers/worker/Dockerfile ./containers/worker
 	docker build -t grid_search_scala_manager -f ./containers/manager/Dockerfile ./containers/manager
 	touch .make/build
@@ -98,7 +102,7 @@ run_worker_local:
 	cd ../..
 .PHONY: run_worker_local
 
-.make/common_publish_local: $(shell find containers/common -type f -not -path "*/target/*")
+.make/common_publish_local: $(CONTAINERS_FILES)
 	cd ./containers/common && sbt publishLocal
 	cd ../..
 	touch .make/common_publish_local
@@ -108,17 +112,22 @@ common_publish_local: .make/common_publish_local
 # Server specific
 
 .make/upload_jars: $(shell find containers -type f -name "*.jar")
-	scp containers/manager/manager.jar efoppiano@atom.famaf.unc.edu.ar:gs_scala/grid_search_scala/containers/manager
-	scp containers/worker/worker.jar efoppiano@atom.famaf.unc.edu.ar:gs_scala/grid_search_scala/containers/worker
+	scp containers/manager/manager.jar $(SERVER_USER)@$(SERVER_HOST):${REMOTE_WORK_DIR}/containers/manager
+	scp containers/worker/worker.jar $(SERVER_USER)@$(SERVER_HOST):${REMOTE_WORK_DIR}/containers/worker
 	touch .make/upload_jars
 
 upload_jars: build .make/upload_jars
 
-REMOTE_WORK_DIR = gs_scala/grid_search_scala
-
 ## Use *_remote if you are running them from your local machine
 
-_deploy_remote:
+_build_remote:
+	docker rmi grid_search_scala_worker -f || true
+	docker rmi grid_search_scala_manager -f || true
+	docker build -t grid_search_scala_worker -f ./containers/worker/Dockerfile ./containers/worker
+	docker build -t grid_search_scala_manager -f ./containers/manager/Dockerfile ./containers/manager
+.PHONY: _build_remote
+
+_deploy_remote: remove _build_remote
 	mkdir -p graphite
 	mkdir -p grafana_config
 	until WORKER_REPLICAS=$(WORKER_REPLICAS) docker stack deploy \
@@ -128,28 +137,28 @@ _deploy_remote:
 .PHONY: _deploy_remote
 
 deploy_remote: upload_jars
-	ssh efoppiano@atom.famaf.unc.edu.ar 'cd $(REMOTE_WORK_DIR) && make _deploy_remote'
+	ssh $(SERVER_USER)@$(SERVER_HOST) 'cd $(REMOTE_WORK_DIR) && make _deploy_remote'
 .PHONY: deploy_remote
 
 remove_remote:
-	ssh efoppiano@atom.famaf.unc.edu.ar 'cd $(REMOTE_WORK_DIR) && make remove'
+	ssh $(SERVER_USER)@$(SERVER_HOST) 'cd $(REMOTE_WORK_DIR) && make remove'
 .PHONY: remove_remote
 
 
 ## Tunneling
 
 tunnel_rabbitmq:
-	ssh -L 15672:127.0.0.1:15672 efoppiano@atom.famaf.unc.edu.ar
+	ssh -L 15672:127.0.0.1:15672 $(SERVER_USER)@$(SERVER_HOST)
 .PHONY: tunnel_rabbitmq
 
 tunnel_graphite:
-	ssh -L 8080:127.0.0.1:8080 efoppiano@atom.famaf.unc.edu.ar
+	ssh -L 8080:127.0.0.1:8080 $(SERVER_USER)@$(SERVER_HOST)
 .PHONY: tunnel_graphite
 
 tunnel_cadvisor:
-	ssh -L 8888:127.0.0.1:8888 efoppiano@atom.famaf.unc.edu.ar
+	ssh -L 8888:127.0.0.1:8888 $(SERVER_USER)@$(SERVER_HOST)
 .PHONY: tunnel_cadvisor
 
 tunnel_grafana:
-	ssh -L 8081:127.0.0.1:8081 efoppiano@atom.famaf.unc.edu.ar
+	ssh -L 8081:127.0.0.1:8081 $(SERVER_USER)@$(SERVER_HOST)
 .PHONY: tunnel_grafana
