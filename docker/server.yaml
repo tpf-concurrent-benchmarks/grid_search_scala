@@ -1,0 +1,27 @@
+version: "3.7"
+
+services:
+  worker:
+    image: grid_search_scala_worker
+    depends_on:
+      - rabbitmq
+      - graphite
+    deploy:
+      replicas: ${WORKER_REPLICAS}
+      restart_policy:
+        condition: none
+    environment:
+      - LOCAL=${LOCAL}
+      - NODE_ID=worker_{{.Task.Slot}}
+
+  manager:
+    image: grid_search_scala_manager
+    depends_on:
+      - rabbitmq
+      - graphite
+    deploy:
+      restart_policy:
+        condition: none
+    environment:
+      - LOCAL=${LOCAL}
+      - NODE_ID=manager

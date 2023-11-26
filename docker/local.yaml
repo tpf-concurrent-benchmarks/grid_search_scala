@@ -1,0 +1,40 @@
+version: "3.7"
+
+# Use with docker/common.yaml
+services:
+  worker:
+    image: grid_search_scala_worker
+    depends_on:
+      - rabbitmq
+      - graphite
+    volumes:
+      - "../containers/worker/src:/app/src"
+      - "../containers/worker/build.sbt:/app/build.sbt"
+      - "../containers/worker/project/build.properties:/app/project/build.properties"
+      - "../containers/worker/project/plugins.sbt:/app/project/plugins.sbt"
+      - "~/.ivy2:/root/.ivy2"
+    deploy:
+      replicas: 4
+      restart_policy:
+        condition: none
+    environment:
+      - LOCAL=${LOCAL}
+      - NODE_ID=worker_{{.Task.Slot}}
+
+  manager:
+    image: grid_search_scala_manager
+    depends_on:
+      - rabbitmq
+      - graphite
+    volumes:
+      - "../containers/manager/src/:/app/src"
+      - "../containers/manager/build.sbt:/app/build.sbt"
+      - "../containers/manager/project/build.properties:/app/project/build.properties"
+      - "../containers/manager/project/plugins.sbt:/app/project/plugins.sbt"
+      - "~/.ivy2:/root/.ivy2"
+    deploy:
+      restart_policy:
+        condition: none
+    environment:
+      - LOCAL=${LOCAL}
+      - NODE_ID=manager

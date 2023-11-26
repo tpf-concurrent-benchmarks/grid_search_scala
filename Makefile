@@ -1,42 +1,47 @@
+WORKER_REPLICAS = 4
+
 init:
+	mkdir -p .make
 	docker swarm init
 .PHONY: init
 
-compile:
-	cd ./containers/worker && sbt compile
-	cd ../..
-	cd ./containers/manager && sbt compile
-.PHONY: compile
-
-jar: common_publish_local
-	docker compose -f docker-compose-compilation.yaml up --build
-	docker compose -f docker-compose-compilation.yaml down
+.make/jar: $(shell find containers -type f -not -path "*/target/*")
+	docker compose -f docker/compilation.yaml up --build
+	docker compose -f docker/compilation.yaml down
 	cp ./compilation/manager/scala-3.3.1/manager.jar ./containers/manager/manager.jar
 	cp ./compilation/worker/scala-3.3.1/worker.jar ./containers/worker/worker.jar
-.PHONY: jar
+	touch .make/jar
 
-jar_local:
+jar: common_publish_local .make/jar
+
+.make/jar_local: $(shell find containers -type f -not -path "*/target/*" -not -name "manager.jar" -not -name "worker.jar")
 	cd ./containers/manager && sbt assembly
 	cd ../..
 	cd ./containers/worker && sbt assembly
 	cd ../..
 	cp ./containers/manager/target/scala-3.3.1/manager.jar ./containers/manager/manager.jar
 	cp ./containers/worker/target/scala-3.3.1/worker.jar ./containers/worker/worker.jar
-.PHONY: jar_local
+	touch .make/jar_local
 
-build:
+jar_local: common_publish_local .make/jar_local
+
+.make/build: $(shell find containers -type f -not -path "*/target/*")
 	docker rmi grid_search_scala_worker -f
 	docker rmi grid_search_scala_manager -f
 	docker build -t grid_search_scala_worker -f ./containers/worker/Dockerfile ./containers/worker
 	docker build -t grid_search_scala_manager -f ./containers/manager/Dockerfile ./containers/manager
-.PHONY: build
+	touch .make/build
+
+build: jar_local .make/build
 
 build_rabbitmq:
-	docker build -t rostov_rabbitmq ./containers/rabbitmq/
+	if ! docker images | grep -q rostov_rabbitmq; then \
+		docker build -t rostov_rabbitmq ./containers/rabbitmq/; \
+	fi
 .PHONY: build_rabbitmq
 
-run_rabbitmq:
-	docker stack deploy -c docker-compose-rabbitmq.yaml rabbitmq
+run_rabbitmq: build_rabbitmq
+	docker stack deploy -c docker/rabbitmq.yaml rabbitmq
 .PHONY: run_rabbitmq
 
 down_rabbitmq:
@@ -45,23 +50,13 @@ down_rabbitmq:
 	fi
 .PHONY: down_rabbitmq
 
-run_graphite: down_graphite
-	docker stack deploy -c docker-compose-graphite.yaml graphite
-.PHONY: run_graphite
-
-down_graphite:
-	if docker stack ls | grep -q graphite; then \
-		docker stack rm graphite; \
-	fi
-.PHONY: down_graphite
-
-setup: init common_publish_local compile build build_rabbitmq
+setup: init build build_rabbitmq
 .PHONY: setup
 
-deploy: remove build down_rabbitmq down_graphite
+deploy: remove build down_rabbitmq build_rabbitmq
 	mkdir -p graphite
 	mkdir -p grafana_config
-	docker stack deploy -c docker-compose.yaml gs_scala
+	WORKER_REPLICAS=$(WORKER_REPLICAS) docker stack deploy -c docker/rabbitmq.yaml -c docker/common.yaml -c docker/local.yaml gs_scala
 .PHONY: deploy
 
 remove:
@@ -83,43 +78,40 @@ run_manager_local:
 	cd ../..
 .PHONY: run_manager_local
 
-run_manager_tests:
-	cd ./containers/manager && sbt test
-	cd ../..
-.PHONY: run_manager_tests
-
 run_worker_local:
 	cd ./containers/worker && LOCAL=true sbt -J-Xmx500M run
 	cd ../..
 .PHONY: run_worker_local
 
-run_worker_tests:
-	cd ./containers/worker && sbt test
-	cd ../..
-.PHONY: run_worker_tests
-
-common_publish_local:
+.make/common_publish_local: $(shell find containers/common -type f -not -path "*/target/*")
 	cd ./containers/common && sbt publishLocal
 	cd ../..
-.PHONY: common_publish_local
+	touch .make/common_publish_local
+
+common_publish_local: .make/common_publish_local
 
 # Server specific
 
-upload_jars: jar
+.make/upload_jars: $(shell find containers -type f -name "*.jar")
 	scp containers/manager/manager.jar efoppiano@atom.famaf.unc.edu.ar:gs_scala/grid_search_scala/containers/manager
 	scp containers/worker/worker.jar efoppiano@atom.famaf.unc.edu.ar:gs_scala/grid_search_scala/containers/worker
-.PHONY: upload_jars
+	touch .make/upload_jars
+
+upload_jars: jar .make/upload_jars
 
 REMOTE_WORK_DIR = gs_scala/grid_search_scala
 
 ## Use *_remote if you are running them from your local machine
 ## Do not use those that start with _
-_build_remote:
+
+.make/_build_remote: $(shell find containers -type f -not -path "*/target/*" -name "*.jar")
 	docker rmi grid_search_scala_worker -f
 	docker rmi grid_search_scala_manager -f
 	docker build -t grid_search_scala_worker -f ./containers/worker/Dockerfile ./containers/worker
 	docker build -t grid_search_scala_manager -f ./containers/manager/Dockerfile ./containers/manager
-.PHONY: _build_remote
+	touch .make/_build_remote
+
+_build_remote: .make/_build_remote
 
 build_remote: upload_jars
 	ssh efoppiano@atom.famaf.unc.edu.ar 'cd $(REMOTE_WORK_DIR) && make _build_remote'
@@ -136,7 +128,7 @@ deploy_remote: remove_remote build_remote
 
 _remove_remote:
 	if docker stack ls | grep -q gs_scala; then \
-			docker stack rm gs_scala; \
+    			docker stack rm gs_scala; \
 	fi
 .PHONY: _remove_remote
 
@@ -144,24 +136,6 @@ remove_remote:
 	ssh efoppiano@atom.famaf.unc.edu.ar 'cd $(REMOTE_WORK_DIR) && make _remove_remote'
 .PHONY: remove_remote
 
-## Use *_server if you are running them from the server (remember to upload the jars first)
-build_server:
-	docker rmi grid_search_scala_worker -f
-	docker rmi grid_search_scala_manager -f
-	docker build -t grid_search_scala_worker -f ./containers/worker/Dockerfile ./containers/worker
-	docker build -t grid_search_scala_manager -f ./containers/manager/Dockerfile ./containers/manager
-.PHONY: build_server
-
-deploy_server: remove_server build_server
-	mkdir -p graphite
-	docker stack deploy -c docker-compose-server.yaml gs_scala
-.PHONY: deploy_server
-
-remove_server:
-	if docker stack ls | grep -q gs_scala; then \
-			docker stack rm gs_scala; \
-	fi
-.PHONY: remove_server
 
 ## Tunneling
 
