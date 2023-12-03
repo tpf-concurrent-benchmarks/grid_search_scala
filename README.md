@@ -1,14 +1,8 @@
 # Grid Search - Scala
 
-This is a Scala implementation of a system for performing a grid search under [certain specifications](#).
+This is a Scala implementation of a system for performing a grid search under [common specifications](https://github.com/tpf-concurrent-benchmarks/docs/tree/main/grid_search) defined for multiple languages.
 
-The objective of this project is to benchmark the language on a real-world distributed system. See more in [docs](docs/README.md).
-
-> TODO: Make common specification docs
-
-![robustness](docs/img/robustness.png)
-
-The system is composed by a master node and a number of worker nodes.
+The objective of this project is to benchmark the language on a real-world distributed system.
 
 ## Deployment
 
@@ -38,3 +32,8 @@ Such as: `run_rabbitmq`, `run_graphite`, `run_manager_local`, `run_worker_local`
 There are make scripts to tunnel the services such as: `tunnel_rabbitmq`, `tunnel_graphite`, `tunnel_cadvisor`, `tunnel_grafana`
 
 > This will require ssh access to the server
+
+## Implementation details
+
+- The system uses RabbitMQ as a MOM to distribute the tasks to the workers.
+- The implementation makes heavy use of lazy iterators.
