@@ -8,7 +8,7 @@ services:
       - "../statsd.config.js:/opt/statsd/config/tcp.js:ro"
       - "../graphite.carbon.conf:/opt/graphite/conf/carbon.conf:ro"
       - "../graphite.storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf:ro"
-      - "../graphite:/opt/graphite/storage/:rw"
+      - "graphite_nfs:/opt/graphite/storage/:rw"
     ports:
       - "8080:8080"
       - "8125:8125/udp"
@@ -55,3 +55,9 @@ services:
 volumes:
   grafana_config:
       external: true
+
+  graphite_nfs:
+    driver_opts:
+      type: nfs
+      o: "addr=10.196.239.10,hard,nolock,rw"
+      device: ":/fileshare/graphite"
