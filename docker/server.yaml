@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   worker:
-    image: grid_search_scala_worker
+    image: efoppiano/grid_search_scala_worker:v0.1
     depends_on:
       - rabbitmq
       - graphite
@@ -15,7 +15,7 @@ services:
       - NODE_ID=worker_{{.Task.Slot}}
 
   manager:
-    image: grid_search_scala_manager
+    image: efoppiano/grid_search_scala_manager:v0.1
     depends_on:
       - rabbitmq
       - graphite
