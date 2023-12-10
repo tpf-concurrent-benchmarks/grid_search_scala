@@ -69,11 +69,11 @@ deploy: remove down_rabbitmq common_publish_local build_rabbitmq
 	-c docker/local.yaml gs_scala; do sleep 1; done
 .PHONY: deploy
 
-deploy_cloud: remove down_rabbitmq common_publish_local build_rabbitmq
+deploy_cloud: remove build_rabbitmq
 	mkdir -p graphite
 	mkdir -p grafana_config
 	until WORKER_REPLICAS=$(WORKER_REPLICAS) docker stack deploy \
-	-c docker/rabbitmq.yaml \
+ 	-c docker/rabbitmq.yaml \
 	-c docker/common.yaml \
 	-c docker/server.yaml gs_scala; do sleep 1; done
 .PHONY: deploy_cloud
