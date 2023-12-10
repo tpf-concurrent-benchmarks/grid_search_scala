@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   rabbitmq:
-    image: rostov_rabbitmq
+    image: efoppiano/rostov_rabbitmq:latest
     ports:
       - "15672:15672"
       - "5672:5672"

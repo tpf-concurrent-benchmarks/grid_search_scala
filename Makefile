@@ -69,15 +69,6 @@ deploy: remove down_rabbitmq common_publish_local build_rabbitmq
 	-c docker/local.yaml gs_scala; do sleep 1; done
 .PHONY: deploy
 
-deploy_cloud: remove build_rabbitmq
-	mkdir -p graphite
-	mkdir -p grafana_config
-	until WORKER_REPLICAS=$(WORKER_REPLICAS) docker stack deploy \
- 	-c docker/rabbitmq.yaml \
-	-c docker/common.yaml \
-	-c docker/server.yaml gs_scala; do sleep 1; done
-.PHONY: deploy_cloud
-
 deploy_jars: remove down_rabbitmq build build_rabbitmq
 	mkdir -p graphite
 	mkdir -p grafana_config
@@ -171,3 +162,31 @@ tunnel_cadvisor:
 tunnel_grafana:
 	ssh -L 8081:127.0.0.1:8081 $(SERVER_USER)@$(SERVER_HOST)
 .PHONY: tunnel_grafana
+
+# Cloud specific
+
+setup_cloud:
+	terraform -chdir=terraform apply
+	ansible/get_bastion_ip.sh
+	ansible/update_vmss_inventory.sh
+	ansible/setup.sh
+	ansible/init_swarm.sh
+	ansible/deploy.sh
+.PHONY: setup_cloud
+
+deploy_cloud: remove
+	mkdir -p graphite
+	mkdir -p grafana_config
+	until WORKER_REPLICAS=$(WORKER_REPLICAS) docker stack deploy \
+ 	-c docker/rabbitmq.yaml \
+	-c docker/common.yaml \
+	-c docker/server.yaml gs_scala; do sleep 1; done
+.PHONY: deploy_cloud
+
+bash_manager_cloud:
+	bastion_ip=$$(cat ansible/bastion_ip) && \
+	manager_ip=$$(cat ansible/vmss_hosts | grep -A 1 "\[vmss\]" | tail -n 1) && \
+	ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+	-o ProxyCommand="ssh -o StrictHostKeyChecking=no -i ./key.pem -W %h:%p ubuntu@$$bastion_ip" \
+	-i ./key.pem ubuntu@$$manager_ip
+.PHONY: bash_manager_cloud
