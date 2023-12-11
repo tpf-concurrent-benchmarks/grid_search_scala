@@ -8,10 +8,16 @@ services:
       - "../statsd.config.js:/opt/statsd/config/tcp.js:ro"
       - "../graphite.carbon.conf:/opt/graphite/conf/carbon.conf:ro"
       - "../graphite.storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf:ro"
-      - "graphite_nfs:/opt/graphite/storage/:rw"
+      - "../graphite:/opt/graphite/storage/:rw"
     ports:
       - "8080:8080"
       - "8125:8125/udp"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
 
   grafana:
     image: efoppiano/grafana:0.1
@@ -51,13 +57,9 @@ services:
       - "/dev/disk/:/dev/disk:ro"
     ports:
       - "8888:8080"
+    deploy:
+      mode: global
 
 volumes:
   grafana_config:
       external: true
-
-  graphite_nfs:
-    driver_opts:
-      type: nfs
-      o: "addr=10.196.239.10,hard,nolock,rw"
-      device: ":/fileshare/graphite"
