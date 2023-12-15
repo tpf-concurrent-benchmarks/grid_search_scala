@@ -3,6 +3,7 @@ REMOTE_WORK_DIR = gs_scala/grid_search_scala
 CONTAINERS_FILES = $(shell find containers -type f -not -path "*/target/*")
 SERVER_USER = efoppiano
 SERVER_HOST = atom.famaf.unc.edu.ar
+$(shell mkdir -p .make)
 
 init:
 	mkdir -p .make
@@ -26,7 +27,7 @@ init:
 	touch .make/jar_dockerized
 
 jar: common_publish_local
-	if command -v sbt &> /dev/null; then \
+	if command -v sbt; then \
 		make .make/jar_native; \
 	else \
 		make .make/jar_dockerized; \
@@ -103,8 +104,13 @@ run_worker_local:
 .PHONY: run_worker_local
 
 .make/common_publish_local: $(CONTAINERS_FILES)
-	cd ./containers/common && sbt publishLocal
-	cd ../..
+	if command -v sbt; then \
+		cd ./containers/common && sbt publishLocal; \
+		cd ../..; \
+	else \
+		docker compose -f docker/common_compilation.yaml up --build; \
+		docker compose -f docker/common_compilation.yaml down; \
+	fi
 	touch .make/common_publish_local
 
 common_publish_local: .make/common_publish_local
