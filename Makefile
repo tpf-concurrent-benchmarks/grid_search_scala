@@ -165,15 +165,6 @@ tunnel_grafana:
 
 # Cloud specific
 
-setup_cloud:
-	terraform -chdir=terraform apply
-	ansible/get_bastion_ip.sh
-	ansible/update_vmss_inventory.sh
-	ansible/setup.sh
-	ansible/init_swarm.sh
-	ansible/deploy.sh
-.PHONY: setup_cloud
-
 deploy_cloud: remove
 	mkdir -p graphite
 	mkdir -p grafana_config
@@ -182,11 +173,3 @@ deploy_cloud: remove
 	-c docker/common.yaml \
 	-c docker/server.yaml gs_scala; do sleep 1; done
 .PHONY: deploy_cloud
-
-bash_manager_cloud:
-	bastion_ip=$$(cat ansible/bastion_ip) && \
-	manager_ip=$$(cat ansible/vmss_hosts | grep -A 1 "\[vmss\]" | tail -n 1) && \
-	ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-	-o ProxyCommand="ssh -o StrictHostKeyChecking=no -i ./key.pem -W %h:%p ubuntu@$$bastion_ip" \
-	-i ./key.pem ubuntu@$$manager_ip
-.PHONY: bash_manager_cloud
