@@ -4,18 +4,16 @@ services:
   graphite:
     image: graphiteapp/graphite-statsd:1.1.10-4
     volumes:
-      - "../statsd.config.js:/opt/statsd/config/udp.js:ro"
-      - "../statsd.config.js:/opt/statsd/config/tcp.js:ro"
-      - "../graphite.blacklist.conf:/opt/graphite/conf/blacklist.conf:ro"
-      - "../graphite.carbon.conf:/opt/graphite/conf/carbon.conf:ro"
-      - "../graphite.storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf:ro"
-      - "../graphite:/opt/graphite/storage/:rw"
+      - "./graphite_conf/statsd.config.js:/opt/statsd/config/udp.js:ro"
+      - "./graphite_conf/statsd.config.js:/opt/statsd/config/tcp.js:ro"
+      - "./graphite_conf/graphite.blacklist.conf:/opt/graphite/conf/blacklist.conf:ro"
+      - "./graphite_conf/graphite.carbon.conf:/opt/graphite/conf/carbon.conf:ro"
+      - "./graphite_conf/graphite.storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf:ro"
+      - "./graphite:/opt/graphite/storage/:rw"
     ports:
       - "8080:8080"
       - "8125:8125/udp"
     deploy:
-      mode: replicated
-      replicas: 1
       placement:
         constraints:
           - node.role == manager
@@ -35,8 +33,6 @@ services:
     depends_on:
       - graphite
     deploy:
-      mode: replicated
-      replicas: 1
       placement:
         constraints:
           - node.role == manager
@@ -46,8 +42,6 @@ services:
     ports:
       - "8082:8081"
     deploy:
-      mode: replicated
-      replicas: 1
       placement:
           constraints:
           - node.role == manager
@@ -77,6 +71,52 @@ services:
           memory: 128M
         reservations:
           memory: 64M
+
+  rabbitmq:
+    image: rostov_rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    volumes:
+      - type: bind
+        source: ./containers/rabbitmq/definitions.json
+        target: /definitions.json
+        read_only: true
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 50s
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+  worker:
+    image: grid_search_scala_worker
+    depends_on:
+      - rabbitmq
+      - graphite
+    deploy:
+      replicas: ${WORKER_REPLICAS}
+      restart_policy:
+        condition: none
+    environment:
+      - LOCAL=${LOCAL}
+      - NODE_ID=worker_{{.Task.Slot}}
+
+  manager:
+    image: grid_search_scala_manager
+    depends_on:
+      - rabbitmq
+      - graphite
+    deploy:
+      restart_policy:
+        condition: none
+    environment:
+      - LOCAL=${LOCAL}
+      - NODE_ID=manager
 
 volumes:
   grafana_config:

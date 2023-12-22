@@ -25,9 +25,7 @@ Such as: `run_rabbitmq`, `run_graphite`, `run_manager_local`, `run_worker_local`
 
 ### Remote deployment
 
-`make build server` builds the docker images on the server.
-
-`make deploy server` deploys the system on the server.
+`make deploy_remote` builds and deploys the system on the server.
 
 There are make scripts to tunnel the services such as: `tunnel_rabbitmq`, `tunnel_graphite`, `tunnel_cadvisor`, `tunnel_grafana`
 
