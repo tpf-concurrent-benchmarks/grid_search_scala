@@ -21,7 +21,7 @@ build_rabbitmq:
 .PHONY: build_rabbitmq
 
 run_rabbitmq: build_rabbitmq
-	docker stack deploy rabbitmq.yaml rabbitmq
+	docker stack deploy -c docker/rabbitmq.yaml rabbitmq
 .PHONY: run_rabbitmq
 
 down_rabbitmq:
@@ -37,7 +37,10 @@ deploy: remove down_rabbitmq build_rabbitmq build
 	mkdir -p graphite
 	mkdir -p grafana_config
 	until WORKER_REPLICAS=$(WORKER_REPLICAS) \
-	docker stack deploy -c docker-compose.yaml gs_scala; \
+	docker stack deploy \
+	-c docker/server.yaml \
+	-c docker/rabbitmq.yaml \
+	gs_scala; \
 	do sleep 1; done
 .PHONY: deploy
 
@@ -106,6 +109,9 @@ deploy_cloud: remove
 	mkdir -p graphite
 	mkdir -p grafana_config
 	until WORKER_REPLICAS=$(WORKER_REPLICAS) \
-	docker stack deploy -c docker-compose.yaml gs_scala; \
+	docker stack deploy \
+	-c docker/server.yaml \
+	-c docker/rabbitmq.yaml \
+	gs_scala; \
 	do sleep 1; done
 .PHONY: deploy_cloud
