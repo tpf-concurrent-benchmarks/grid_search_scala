@@ -6,6 +6,8 @@
 - Combined Throughput: 4.85 Results/Second
 - Work-time Variation: 1.95%
 - Memory Usage: 367 MB/Worker
+- Network Usage (Tx): 332 B/(s * Worker)
+- Network Usage (Rx): 184 B/(s * Worker)
 - CPU Usage: 100%/Worker
 - Completion Time: 82.2 Minutes
 

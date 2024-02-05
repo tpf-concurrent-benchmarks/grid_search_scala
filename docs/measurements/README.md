@@ -24,6 +24,8 @@ The system was run on the designated server, using the [Griewank function](https
 | Combined Throughput | 2.57 Results/Second | 4.85 Results/Second | 9.47 Results/Second |
 | Work-time Variation | 1.57%               | 1.95%               | 1.83%               |
 | Memory Usage        | 370 MB/Worker       | 367 MB/Worker       | 360 MB/Worker       |
+| Network Usage (Tx)  | 352 B/(s * Worker)  | 332 B/(s * Worker)  | 322 B/(s * Worker)  |
+| Network Usage (Rx)  | 195 B/(s * Worker)  | 184 B/(s * Worker)  | 179 B/(s * Worker)  |
 | CPU Usage           | 100%/Worker         | 100%/Worker         | 100%/Worker         |
 | Completion Time     | 155 Minutes         | 82.2Minutes         | 42.1 Minutes        |
 
