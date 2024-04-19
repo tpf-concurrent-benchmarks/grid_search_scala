@@ -68,3 +68,9 @@ The objective of this project is to benchmark the language on a real-world distr
 - Grafana: [http://127.0.0.1:8081](http://127.0.0.1:8081)
 - Graphite: [http://127.0.0.1:8080](http://127.0.0.1:8080)
 - Logs
+
+### Libraries
+
+- [typesafe-config](https://github.com/lightbend/config)
+- [akka-rabbitmq](https://github.com/ShellRechargeSolutionsEU/akka-rabbitmq)
+- [java-statsd-client](https://github.com/tim-group/java-statsd-client)
