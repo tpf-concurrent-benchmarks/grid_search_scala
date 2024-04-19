@@ -66,4 +66,5 @@ The objective of this project is to benchmark the language on a real-world distr
 ### Monitoring
 
 - Grafana: [http://127.0.0.1:8081](http://127.0.0.1:8081)
-- Graph
+- Graphite: [http://127.0.0.1:8080](http://127.0.0.1:8080)
+- Logs
