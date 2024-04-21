@@ -40,7 +40,7 @@ The objective of this project is to benchmark the language on a real-world distr
 #### Run
 
 - `make deploy`: deploys the manager and worker services locally, alongside with Graphite, Grafana and cAdvisor.
-- `make remove`: removes all services (stops the swarm)
+- `make remove`: removes all services
 
 > There are make scripts to run rabbit, graphana, manager and worker independently.
 > Such as: `run_rabbitmq`, `run_graphite`, `run_manager_local`, `run_worker_local`
